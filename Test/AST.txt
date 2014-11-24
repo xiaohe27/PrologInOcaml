@@ -1,6 +1,5 @@
-ListTerm([AtomTerm(VarArg "x"); CompoundTerm("f",[ConstArg(IntConst 5); VarArg "y"]); AtomTerm(VarArg "z")]);;
-- : term =
+ListTerm([Var "x"; CompoundTerm("f",[ConstTerm(IntConst 5); Var "y"]); Var "z"]);;
+
+- : ProjCommon.term =
 ListTerm
- [AtomTerm (VarArg "x");
-  CompoundTerm ("f", [ConstArg (IntConst 5); VarArg "y"]);
-  AtomTerm (VarArg "z")]
+ [Var "x"; CompoundTerm ("f", [ConstTerm (IntConst 5); Var "y"]); Var "z"]
