@@ -65,8 +65,8 @@ compound_term_3:
   |compound_term_3 PLUS compound_term_2 { CompoundTerm ("+",[$1;$3])}
   |compound_term_3 MINUS compound_term_2 { CompoundTerm ("-",[$1;$3])}
   
-  
-  
+ compound_term:
+  |compound_term_3 {$1}
 
 list_term:
 | LBRACKET RBRACKET			{ ListTerm [] }
@@ -78,4 +78,4 @@ list_body:
 
 term:
 | list_term					{ $1 }
-| compound_term_3			{ $1 }
+| compound_term			{ $1 }
