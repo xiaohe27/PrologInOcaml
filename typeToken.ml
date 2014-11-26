@@ -50,3 +50,6 @@ type token =
 | RBRACKET
 | PIPE
 | EOF
+
+| BOOL of (bool)
+| UNIT

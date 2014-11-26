@@ -34,7 +34,7 @@
 %token UNIT
 
 /* Define the "goal" nonterminal of the grammar: */
-%type <projCommon.term> term
+%type <ProjCommon.term> term
 %start term
 
 %%
@@ -47,7 +47,7 @@ atomic_term:
   | MINUS UNSIGNEDINTEGER	{ ConstTerm(IntConst (-$2)) }
   | PLUS UNSIGNEDINTEGER	{ ConstTerm(IntConst ($2)) }
   | UNSIGNEDFLOAT		{ ConstTerm(FloatConst $1) }
-  | MINUS UNSIGNEDFLOAT		{ ConstTerm(FloatConst (-$2)) }
+  | MINUS UNSIGNEDFLOAT		{ ConstTerm(FloatConst (-.$2)) }
   | PLUS UNSIGNEDFLOAT		{ ConstTerm(FloatConst ($2)) }
   | STRING			{ ConstTerm(StringConst $1) }
   | BOOL			{ ConstTerm(BoolConst $1) }

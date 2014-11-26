@@ -54,4 +54,4 @@ type token =
   | UNIT
 
 val term :
-  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> projCommon.term
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> ProjCommon.term

@@ -1,5 +1,6 @@
 {
-open TypeToken;;
+open ProjCommon;;
+open Parser;;
 }
 
 (* definitions section *)

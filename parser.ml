@@ -57,7 +57,7 @@ open Parsing;;
 let _ = parse_error;;
 # 1 "parser.mly"
 
-        open projCommon
+        open ProjCommon
 # 62 "parser.ml"
 let yytransl_const = [|
   264 (* DOT *);
@@ -348,7 +348,7 @@ let yyact = [|
     let _2 = (Parsing.peek_val __caml_parser_env 0 : float) in
     Obj.repr(
 # 50 "parser.mly"
-                         ( ConstTerm(FloatConst (-_2)) )
+                         ( ConstTerm(FloatConst (-._2)) )
 # 353 "parser.ml"
                : 'atomic_term))
 ; (fun __caml_parser_env ->
@@ -466,14 +466,14 @@ let yyact = [|
 # 80 "parser.mly"
                 ( _1 )
 # 469 "parser.ml"
-               : projCommon.term))
+               : ProjCommon.term))
 ; (fun __caml_parser_env ->
     let _1 = (Parsing.peek_val __caml_parser_env 0 : 'compound_term) in
     Obj.repr(
 # 81 "parser.mly"
                   ( _1 )
 # 476 "parser.ml"
-               : projCommon.term))
+               : ProjCommon.term))
 (* Entry term *)
 ; (fun __caml_parser_env -> raise (Parsing.YYexit (Parsing.peek_val __caml_parser_env 0)))
 |]
@@ -495,4 +495,4 @@ let yytables =
     Parsing.names_const=yynames_const;
     Parsing.names_block=yynames_block }
 let term (lexfun : Lexing.lexbuf -> token) (lexbuf : Lexing.lexbuf) =
-   (Parsing.yyparse yytables 1 lexfun lexbuf : projCommon.term)
+   (Parsing.yyparse yytables 1 lexfun lexbuf : ProjCommon.term)
