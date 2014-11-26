@@ -1,0 +1,2 @@
+unify [(CompoundTerm("cat",[ConstTerm(StringConst("tom"))]),
+CompoundTerm("cat",[Var "X"]))];;

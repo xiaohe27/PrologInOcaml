@@ -1,0 +1,5 @@
+ListTerm([Var "x"; CompoundTerm("f",[ConstTerm(IntConst 5); Var "y"]); Var "z"]);;
+
+- : ProjCommon.term =
+ListTerm
+ [Var "x"; CompoundTerm ("f", [ConstTerm (IntConst 5); Var "y"]); Var "z"]
