@@ -23,7 +23,7 @@ type program = Prog of rules * query | ProgFromQuery of query;;
 
 
 (* ================= Interpreting ================= *)
-(* Values *)
+(* Values and Memory *)
 type memory = (string * value) list
 and value =
    BoolVal of bool
@@ -81,3 +81,7 @@ let print_memory m =
                         print_value v;
                         print_string (";\n") ) in
     print_m cm
+
+
+(* result *)
+type result = bool * memory ;;
