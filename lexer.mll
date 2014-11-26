@@ -1,5 +1,5 @@
 {
-open typeToken;;
+open TypeToken;;
 }
 
 (* definitions section *)
@@ -82,4 +82,22 @@ and multiline_comment level = parse
 | "/*"				{ multiline_comment (level + 1) lexbuf }
 | eof				{ failwith "Unclosed comment!"; }
 | _				{ multiline_comment level lexbuf }
+
+{(* do not modify this function: *)
+ let lextest s = token (Lexing.from_string s)
+
+ let get_all_tokens s =
+     let b = Lexing.from_string (s^"\n") in
+     let rec g () = 
+     match token b with EOF -> []
+     | t -> t :: g () in
+     g ()
+
+let try_get_all_tokens s =
+    try (Some (get_all_tokens s), true)
+    with Failure "unmatched open comment" -> (None, true)
+       | Failure "unmatched closed comment" -> (None, false)
+ }
+
+
 

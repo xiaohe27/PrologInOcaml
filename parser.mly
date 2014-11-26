@@ -1,5 +1,5 @@
 %{
-        open projCommon
+        open ProjCommon
 %}
 
 /* Define the tokens of the language: */
