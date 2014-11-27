@@ -13,7 +13,11 @@ let const_to_val c = match c with
 			FloatConst f -> FloatVal f |
 			StringConst s -> StringVal s ;;
 
-
+let val2Term val = match val with
+			BoolVal b -> ConstTerm (BoolConst b) |
+			IntVal i -> ConstTerm (IntConst i) |
+			FloatVal f -> ConstTerm (FloatConst f) |
+			StringVal s -> ConstTerm (StringConst s) ;;
 
 let monOpApply op v = match op with 
                 "not" -> (match v with BoolVal true -> BoolVal false |
@@ -219,8 +223,10 @@ let rec typeTest ty term = match ty with
 				
 
 
-let rec eval_term (term, m) = match term with
+let rec eval_term term = match term with
 				ConstTerm(t) -> (const_to_val t) 
-			|	Var(x) -> lookup_mem m x
+			|	Var(x) -> (raise (Failure "Var Not Instantiated yet"))
 
 			| _ -> (raise (Failure "Not supported yet"));;
+
+

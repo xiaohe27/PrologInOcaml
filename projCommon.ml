@@ -84,5 +84,8 @@ let print_memory m =
     print_m cm
 
 
+(*substitution*)
+type subst = (string * term) list;;
+
 (* result *)
-type result = bool * memory ;;
+type result = bool * subst ;;
