@@ -27,9 +27,10 @@ type program = Prog of rules * query | ProgFromQuery of query;;
 type memory = (string * value) list
 and value =
    BoolVal of bool
-  | IntVal of int                                 | FloatVal of float
+  | IntVal of int                                 
+  | FloatVal of float
   | StringVal of string                           
-              | ListVal of value list
+  | ListVal of value list
   
 
 let make_mem x y = ([(x,y)]:memory)

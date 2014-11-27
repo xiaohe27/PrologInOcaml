@@ -1,5 +1,9 @@
 We've known that subst function is a map from string to term.
-
+Achieved:
 1. Impl the subst func such that given a subst function and a var, it can return the term after substitution.
 
 2. Extend the subst func such that given a subst function and a term, it can return the new term where each var has been substituted by its corresponding term in the subst function.
+
+
+ToDo if have time:
+string concat: 3 args op
