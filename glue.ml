@@ -7,4 +7,4 @@ open Lexer
 (* Entry main *)
 
 
-let parse s = Parser.term Lexer.token (Lexing.from_string s);;
+let parse s = Parser.rules Lexer.token (Lexing.from_string s);;

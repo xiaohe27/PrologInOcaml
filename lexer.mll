@@ -6,7 +6,7 @@ open Parser;;
 (* definitions section *)
 let capital = ['A'-'Z'] (* capital letters *)
 let small = ['a'-'z'] (* small letters *)
-let digit = ['0'-'9'] (* digits *)
+let digit = ['0'-'9']
 let underline = ['_'] (* underline character *)
 let alpha = capital | small | digit | underline (* any alphanumeric character*)
 let word = small alpha* (* prolog words *)
@@ -15,12 +15,16 @@ let symbol = ['+' '-' '*' '/' '\\' '^' '<' '>' '=' '~' ':' '?' '@' '#' '$' '&']
 let solo_char = ['!' ';' '.' '[' ']' '(' ')' ',' '|']
 let name = quoted_name | word | symbol+ | solo_char (* valid prolog names *)
 let variable = (capital | underline) alpha* (* prolog variables *)
-let nstring = '"' [^ '"']* '"' (* prolog strings *)
-let sign = '+' | '-' (* signs *)
-let exp = ('e' | 'E') sign? digit+ (* optional exponent *)
-let simple_integer = digit+ (* simplest integer *)
-let unsigned_integer = simple_integer exp? (* integers with no sign *)
+
+ 
+let int = '-'? digit+
+let frac = '.' digit*
+let exp = ['e' 'E'] ['-' '+']? digit+
+let float = int frac exp?
+
 let whitespace = [' ' '\t' '\n']
+let open_comment = "(*"
+let close_comment = "*)"
 
 rule token = parse
 | eof				{ EOF }
@@ -32,14 +36,15 @@ rule token = parse
 |"\\="                          { TERM_NOTUNIFY } (* terms do not unify *)
 |"=.."                          { TERM_DECOMP } (* term composition/decomposition *)
 |"=="                           { TERM_EQ } (* term equality *)
+|"\\=="                           { TERM_INEQ } (* term inequality *)
 |"@=<"                          { TERM_ORDER_LEQ } (* term less or equal to (order of terms) *)
 |"@>="                          { TERM_ORDER_GEQ } (* term greater or equal to (order of terms) *)
-|"@="                           { TERM_ORDER_EQ } (* term equality (order of terms) *)
-|"@\\="                         { TERM_ORDER_INEQ } (* term inequality (order of terms) *)
+|"=@="                           { TERM_ORDER_EQ } (* term equality (order of terms) *)
+|"\\=@="                         { TERM_ORDER_INEQ } (* term inequality (order of terms) *)
 |"@<"                           { TERM_ORDER_LESS } (* term less than (order of terms) *)
 |"@>"                           { TERM_ORDER_GREATER } (* term greater than (order of terms) *)
 |">="                           { ARITH_GEQ } (* arithmetical greater or equal to *)
-|"<="                           { ARITH_LEQ } (* arithmetical less or equal to *)
+|"=<"                           { ARITH_LEQ } (* arithmetical less or equal to *)
 |"is"                           { IS } (* variable instantiation *)
 |"::"                           { DOUBLECOLON } (* module(database) specifier *)
 |"\\/"                          { BITWISE_AND } (* bitwise and *)
@@ -60,29 +65,44 @@ rule token = parse
 |">"                            { ARITH_GREATER } (* arithmetical greater than *)
 |"!"                            { CUT } (* cut operator *)
 |":-"                           { COLONHYPHEN } (* logical implication *)
-
+|"?-"                           { QUESTIONHYPHEN } 
 |"["                            { LBRACKET } (* left bracket for lists *)
 |"]"                            { RBRACKET } (* right bracket for lists *)
 |"|"                            { PIPE } (* head-tail delimiter for lists *)
 | ".."				{ DOUBLEDOT }
 | "."				{ DOT }
-| '%'				{ single_line_comment lexbuf }
-| "/*"				{ multiline_comment 0 lexbuf }
+ |"%"[^'\n']* 		{ token lexbuf }
+  | open_comment		{ comment 1 lexbuf }
+  | close_comment 		{ raise (Failure "unmatched closed comment") }
+  | '"'     			 { read_string (Buffer.create 17) lexbuf }
 | name as id			{ NAME (id) }
-| unsigned_integer		{ UNSIGNEDINTEGER (int_of_string (Lexing.lexeme lexbuf)) }
-| nstring			{ STRING (Lexing.lexeme lexbuf) }
+| int      { INT (int_of_string (Lexing.lexeme lexbuf)) }
+| float    { FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
 | variable			{ VARIABLE (Lexing.lexeme lexbuf) }
 
-and single_line_comment = parse
-| "\n"				{ token lexbuf }
-| eof				{ EOF }
-| _				{ single_line_comment lexbuf }
+and comment depth = parse
+open_comment	{ comment (depth+1) lexbuf }
+| close_comment { if depth = 1 then token lexbuf else comment (depth - 1) lexbuf }
+| eof		{ raise (Failure "unmatched open comment") }
+| _		{ comment depth lexbuf }
 
-and multiline_comment level = parse
-| "*/"				{ if level = 0 then token lexbuf else multiline_comment (level - 1) lexbuf }
-| "/*"				{ multiline_comment (level + 1) lexbuf }
-| eof				{ failwith "Unclosed comment!"; }
-| _				{ multiline_comment level lexbuf }
+and read_string buf =
+  parse
+  | '"'       { STRING (Buffer.contents buf) }
+  | '\\' '/'  { Buffer.add_char buf '/'; read_string buf lexbuf }
+  | '\\' '\\' { Buffer.add_char buf '\\'; read_string buf lexbuf }
+  | '\\' 'b'  { Buffer.add_char buf '\b'; read_string buf lexbuf }
+  | '\\' 'f'  { Buffer.add_char buf '\012'; read_string buf lexbuf }
+  | '\\' 'n'  { Buffer.add_char buf '\n'; read_string buf lexbuf }
+  | '\\' 'r'  { Buffer.add_char buf '\r'; read_string buf lexbuf }
+  | '\\' 't'  { Buffer.add_char buf '\t'; read_string buf lexbuf }
+  | [^ '"' '\\']+
+    { Buffer.add_string buf (Lexing.lexeme lexbuf);
+      read_string buf lexbuf
+    }
+  | _ { raise (Failure "Illegal string character" ) }
+  | eof { raise (Failure "unmatched open quote") }
+
 
 {(* do not modify this function: *)
  let lextest s = token (Lexing.from_string s)

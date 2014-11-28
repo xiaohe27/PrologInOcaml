@@ -2,13 +2,12 @@ type token =
   | STRING of (string)
   | VARIABLE of (string)
   | NAME of (string)
-  | UNSIGNEDFLOAT of (float)
-  | UNSIGNEDINTEGER of (int)
-  | SIGNEDFLOAT of (float)
-  | SIGNEDINTEGER of (int)
+  | FLOAT of (float)
+  | INT of (int)
   | DOT
   | DOUBLEDOT
   | COLONHYPHEN
+  | QUESTIONHYPHEN
   | ARROW
   | NOT
   | TERM_EQ
@@ -51,7 +50,8 @@ type token =
   | PIPE
   | EOF
   | BOOL of (bool)
-  | UNIT
 
-val term :
-  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> ProjCommon.term
+val rules :
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> ProjCommon.rules
+val program :
+  (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> ProjCommon.program
