@@ -187,7 +187,7 @@ let rec unifyPredicates (pred1,pred2) =
 		(Identifier id1, Predicate(f,tl)) -> (None) |
 		(Predicate(f,tl), Identifier id2) -> (None) |
 		(Predicate(f1,tl1), Predicate(f2,tl2)) -> (
-			if (f1 != f2) then None 
+			if (not(f1 = f2)) then None 
 			else( match (genPairList tl1 tl2) with
 				None -> None |
 				Some eqlst -> (unifyHead eqlst))) ;;

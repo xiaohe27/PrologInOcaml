@@ -1,5 +1,29 @@
-ListTerm([Var "x"; CompoundTerm("f",[ConstTerm(IntConst 5); Var "y"]); Var "z"]);;
 
-- : ProjCommon.term =
-ListTerm
- [Var "x"; CompoundTerm ("f", [ConstTerm (IntConst 5); Var "y"]); Var "z"]
+(* Term *)
+let term0=ListTerm([Var "x"; CompoundTerm("f",[ConstTerm(IntConst 5); Var "y"]); Var "z"]);;
+
+
+(* Subst *)
+let subst0=[("X",ConstTerm(IntConst 2));("Y",CompoundTerm("cat", [Var "X"; ConstTerm(FloatConst 2.2)]))];;
+
+
+let subst1=[("X", Var "Y")];;
+
+
+(* Predicate *)
+let pred0=Identifier("Y");;
+
+let pred1=Predicate("Pred1" , [CompoundTerm("cat",[ConstTerm(StringConst("tom")); Var "X"]); CompoundTerm("X",[Var "Y"])]);;
+
+let pred=Predicate("cat", [ConstTerm(StringConst "tom")]);;
+
+let predX=Predicate("cat", [Var "X"]);;
+
+(* Clause *)
+let clause= Fact(Predicate("cat", [ConstTerm(StringConst "tom")]));;
+
+(* Query *)
+let query= Query([Predicate("cat", [Var "X"])],[]);;
+
+(* Rules *)
+let rules= RuleList([Fact(Predicate("cat", [ConstTerm(StringConst "tom")]))]);;
