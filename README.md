@@ -19,4 +19,7 @@ sh make.sh
 #use "glue.ml";;
 
 
+#Test
+GOTO Test/ReadMe.txt for more info.
+
 
