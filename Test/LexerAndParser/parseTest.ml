@@ -9,4 +9,6 @@ open Glue
 let clause1Str= "cat(tom).";;
 let queryStr= "?-cat(X).";;
 
-let parsedAST= Glue.parse (clause1Str ^ queryStr);;
+let parsedRules= Glue.parseRules (clause1Str);;
+
+let parsedPgm= Glue.parseProgram (clause1Str ^ queryStr);;

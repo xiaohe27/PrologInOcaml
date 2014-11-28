@@ -24,9 +24,8 @@ type program = Prog of rules * query | ProgFromQuery of query;;
 
 
 (* ================= Interpreting ================= *)
-(* Values and Memory *)
-type memory = (string * value) list
-and value =
+(* Values *)
+type value =
    BoolVal of bool
   | IntVal of int                                 
   | FloatVal of float
@@ -34,13 +33,6 @@ and value =
   | ListVal of value list
   
 
-let make_mem x y = ([(x,y)]:memory)
-let rec lookup_mem (gamma:memory) x =
-  match gamma with
-     []        -> raise (Failure ("identifier "^x^" unbound"))
-   | (y,z)::ys -> if x = y then z else lookup_mem ys x
-let sum_mem (delta:memory) (gamma:memory) = ((delta@gamma):memory)
-let ins_mem (gamma:memory) x y = sum_mem (make_mem x y) gamma
 
 (*value output*)
 let rec print_value v =
@@ -63,30 +55,45 @@ let rec print_value v =
                               in pl l)
   
 
-let compact_memory m =
-  let rec comp m rev_comp_m =
-      (match m with [] -> List.rev rev_comp_m
-        | (x,y) :: m' ->
-           if List.exists (fun (x',_) -> x = x') rev_comp_m
-              then comp m' rev_comp_m
-           else comp m' ((x,y)::rev_comp_m))
-  in comp m []
-
-(*memory output*)
-let print_memory m =
-    let cm = compact_memory m in
-    let rec print_m m = 
-    (match m with
-        []           -> ()
-      | (x, v) :: m' -> print_m m';
-                        print_string ("val "^x ^ " = ");
-                        print_value v;
-                        print_string (";\n") ) in
-    print_m cm
-
-
 (*substitution*)
 type subst = (string * term) list;;
 
 (* result *)
 type result = bool * subst ;;
+
+
+(*print term*)
+let string_of_const c =
+    match c 
+    with IntConst n    -> string_of_int n
+       | BoolConst b   -> if b then "true" else "false"
+       | FloatConst f  -> string_of_float f
+       | StringConst s -> "\"" ^ s ^ "\"";;
+      
+
+let isInfix op = match op with
+					"+" -> (true) |
+					"-" -> (true) |
+					"*" -> (true) |
+					"/" -> (true) |
+					"**" -> (true) |
+					_ -> false ;;
+
+let rec stringOfTermList tl = match tl with
+				[] -> "" |
+				[h] -> string_of_term h |
+				h::t -> string_of_term h ^ ", "^stringOfTermList t
+
+and string_of_term term=
+  match term with
+    (Var v) -> (v) |
+	(ConstTerm const) -> (string_of_const const) |
+	(CompoundTerm(f,tl)) -> ( if ((isInfix f) && (List.length tl) = 2) then (string_of_term (List.hd tl) ^ f ^ string_of_term (List.nth tl 1)) else (
+		f ^ "(" ^ (stringOfTermList tl) ^ ")"  ) ) 
+	 |
+	(ListTerm tl) -> ("[" ^ (stringOfTermList tl) ^ "]");;
+
+let rec string_of_subst subst = match subst with
+				[] -> "" |
+				(v,t)::tail -> (v ^ "=" ^ (string_of_term t)) ^ 
+				 ".\n" ^ (string_of_subst tail) ;;
