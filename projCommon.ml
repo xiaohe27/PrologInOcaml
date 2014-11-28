@@ -83,8 +83,6 @@ let print_memory m =
                         print_value v;
                         print_string (";\n") ) in
     print_m cm
-<<<<<<< HEAD
-=======
 
 
 (*substitution*)
@@ -92,4 +90,3 @@ type subst = (string * term) list;;
 
 (* result *)
 type result = bool * subst ;;
->>>>>>> interpreter
