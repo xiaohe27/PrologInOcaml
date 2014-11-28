@@ -47,6 +47,17 @@ let isTypeTesting op = match op with
 			_ -> false;;
 
 
+let retBool op = match op with 
+			">" -> true |
+			"<" -> true |
+			"=:=" -> true |
+			">=" -> true |
+			"<=" -> true |
+			"=\\=" -> true |
+			"," -> true |
+			";" -> true |
+			_ -> false;;
+
 (* Test whether a function is built-in function *)
 let isBuiltInOp op = if (isTypeTesting op) then true 
                       else if (op = "=" || op = "is") then true else false;; 
