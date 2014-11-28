@@ -7,3 +7,5 @@
 
 *.exe
 *.bak
+lexer.ml
+parser.ml
