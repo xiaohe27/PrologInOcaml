@@ -123,8 +123,8 @@ predicate:
 
 predicate_list:
 | predicate								{ ([$1],[]) }
-| predicate COMMA predicate_list	 	{ ($1::$3, ","::snd($3)) }
-| predicate SEMICOLON predicate_list	{ ($1::$3, ";"::snd($3)) }
+| predicate COMMA predicate_list	 	{ ($1::(fst $3), ","::snd($3)) }
+| predicate SEMICOLON predicate_list	{ ($1::(fst $3), ";"::snd($3)) }
 
 clause:
 | predicate DOT								{ Fact $1 }
