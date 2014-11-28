@@ -3,10 +3,6 @@ open Evaluator
 open Unify
 
 
-let isBuiltInOp op = if (Evaluator.isTypeTesting op) then true 
-                      else if (op = "=" || op = "is") then true else false;; 
-
-
 let rec consultSinglePred rules predicate = match rules with 
                                           RuleList ([]) -> (false, []) |
                                           RuleList (clause::tail) -> (match clause with 
@@ -51,7 +47,7 @@ let rec eval_predicate rules predicate = match predicate with
 							 _ -> consultSinglePred rules predicate ) |
 						                  
 
-				   Predicate (f, tl) -> (if (isBuiltInOp f)   (*It is built in operation*)
+				   Predicate (f, tl) -> (if (Evaluator.isBuiltInOp f)   (*It is built in operation*)
 				                          then (if (Evaluator.isTypeTesting f) then  (*it is type testing*)
 							         (if (List.length tl)!=1  then (false, []) else (Evaluator.typeTest f (List.hd tl), []) )
 							        else (      (*other built-in ops*)

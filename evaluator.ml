@@ -47,6 +47,10 @@ let isTypeTesting op = match op with
 			_ -> false;;
 
 
+(* Test whether a function is built-in function *)
+let isBuiltInOp op = if (isTypeTesting op) then true 
+                      else if (op = "=" || op = "is") then true else false;; 
+
 
 let rec binOpApply binop (v1,v2) = match binop with
 				"+" -> (match (v1, v2) with 
@@ -228,6 +232,34 @@ let rec eval_term term = match term with
 				ConstTerm(t) -> (const_to_val t) 
 			|	Var(x) -> (raise (Failure "Var Not Instantiated yet"))
 
-			| _ -> (raise (Failure "Not supported yet"));;
+			|       CompoundTerm(f,tl) -> (if isBuiltInOp f then 
+			   (if (isTypeTesting f) then 
+					                (if (List.length tl)!=1  then (BoolVal false) else BoolVal(typeTest f (List.hd tl)) )
+						 else (     
+							             if (List.length tl) != 2 then raise (Failure "number of args to the function is wrong")
+									 else (let eq= (List.hd tl, List.nth tl 1) in
+									 
+							             (match f with 
+								     "=" -> (match (Unify.unify [eq]) with  
+									     None -> BoolVal(false) |
+									     (Some sig0) -> BoolVal(true) ) |
+
+								     "is" -> (let lhs= fst eq in 
+									      let rhs= snd eq in
+									     let rhsVal = eval_term rhs in
+									     
+									     match lhs with 
+									      ConstTerm _ -> (binOpApply "=:=" (eval_term lhs,rhsVal) ) |
+									      Var x -> BoolVal(true) |
+									      _ -> BoolVal(false)) |
+								     _ -> (raise (Failure "Not supported yet."))) )  
+			                                            
+			                                ) )   
+
+			else ( if (List.length tl) == 2 then (binOpApply f (eval_term (List.hd tl), eval_term (List.nth tl 1))) else (raise (Failure "Not supported yet")) ) ) 
+
+			|       ListTerm(tl) -> (ListVal (List.map (eval_term) tl))
+
+		;;
 
 
