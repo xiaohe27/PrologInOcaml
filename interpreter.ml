@@ -10,7 +10,7 @@ let rec eval_predicate rules predicate = match predicate with
                                    Identifier fact -> ( match fact with
 				                         "true" -> (true,[]) |
 							 "false" -> (false,[]) |
-							 _ -> consult rules (Query([predicate])) ) |
+							 _ -> consultSinglePred rules predicate ) |
 						                  
 
 				   Predicate (f, tl) -> (if (isBuiltInOp f)   (*It is built in operation*)
@@ -38,9 +38,16 @@ let rec eval_predicate rules predicate = match predicate with
 									      _ -> (false, [])) |
 								     _ -> (raise (Failure "Not supported yet.")))  )    )
 
-				                          else (consult rules (Query([predicate])) ) );;
+				                          else  ( consultSinglePred rules predicate) );;
 
 
 
-and consult rules query = ;;
+
+let consultSinglePred rules predicate = match rules with 
+                                          RuleList ([]) -> (false, []) |
+                                          RuleList (clause::tail) -> () ;;
+
+
+      (*returns a result which is of the form bool * subst*)
+let consult rules query = match query ;;
    

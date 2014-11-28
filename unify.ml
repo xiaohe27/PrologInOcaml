@@ -14,6 +14,12 @@ let rec term_lift_subst subst term = match term with
 			    |          CompoundTerm(f,tl) -> CompoundTerm(f, List.map (term_lift_subst subst) tl)
 			    |          ListTerm(tl) -> ListTerm(List.map (term_lift_subst subst) tl);;
 
+
+let rec substInPredicate subst predicate = match predicate with 
+						Identifier _ -> predicate |
+						Predicate(f,tl) -> Predicate(f, List.map (term_lift_subst subst) tl);;
+ 
+
 (*Occurs check*)
 let rec occurs x term = match term with 
 			Var y -> (x = y) |
@@ -174,3 +180,14 @@ let rec unifyHead eqlst = match eqlst with
 				
 ));;
 
+
+let rec unifyPredicates (pred1,pred2) = 
+	match (pred1, pred2) with
+		(Identifier id1, Identifier id2) -> (if id1=id2 then Some [] else None) |
+		(Identifier id1, Predicate(f,tl)) -> (None) |
+		(Predicate(f,tl), Identifier id2) -> (None) |
+		(Predicate(f1,tl1), Predicate(f2,tl2)) -> (
+			if (f1 != f2) then None 
+			else( match (genPairList tl1 tl2) with
+				None -> None |
+				Some eqlst -> (unifyHead eqlst))) ;;

@@ -13,11 +13,12 @@ let const_to_val c = match c with
 			FloatConst f -> FloatVal f |
 			StringConst s -> StringVal s ;;
 
-let val2Term val = match val with
+let val2Term value = match value with
 			BoolVal b -> ConstTerm (BoolConst b) |
 			IntVal i -> ConstTerm (IntConst i) |
 			FloatVal f -> ConstTerm (FloatConst f) |
-			StringVal s -> ConstTerm (StringConst s) ;;
+			StringVal s -> ConstTerm (StringConst s) |
+			ListVal vl -> ListTerm (List.map (val2Term) vl);;
 
 let monOpApply op v = match op with 
                 "not" -> (match v with BoolVal true -> BoolVal false |
