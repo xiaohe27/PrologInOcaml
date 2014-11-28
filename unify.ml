@@ -14,6 +14,12 @@ let rec term_lift_subst subst term = match term with
 			    |          CompoundTerm(f,tl) -> CompoundTerm(f, List.map (term_lift_subst subst) tl)
 			    |          ListTerm(tl) -> ListTerm(List.map (term_lift_subst subst) tl);;
 
+
+let rec substInPredicate subst predicate = match predicate with 
+						Identifier _ -> predicate |
+						Predicate(f,tl) -> Predicate(f, List.map (term_lift_subst subst) tl);;
+ 
+
 (*Occurs check*)
 let rec occurs x term = match term with 
 			Var y -> (x = y) |
@@ -33,6 +39,9 @@ let rec occursInSndPartOfSubst x sigma = match sigma with
 						(k,v)::tail -> if occurs x v then true 
 								else occursInSndPartOfSubst x tail;;
 
+let rec occursInSubstList x lst = match lst with
+                                    [] -> false |
+				    (k,v)::tail -> (if x=k then true else occursInSubstList x tail);;
 
 
 (*substitute the constraints list*)
@@ -83,6 +92,7 @@ let rec genPairList list1 list2 = if (List.length list1 != List.length list2)
 
 
 
+(*Unify the body part of a rule.*)
 let rec unify eqlst = match eqlst with 
 			[] -> Some [] |
 			(s,t)::eqlst' -> (
@@ -125,3 +135,59 @@ let rec unify eqlst = match eqlst with
 				
 ));;
 
+
+(* Used to unify the query and head *)
+let rec unifyHead eqlst = match eqlst with 
+			[] -> Some [] |
+			(s,t)::eqlst' -> (
+				if s = t then unifyHead eqlst'        (*delete rule*)
+				else (match (s,t) with 
+					(ConstTerm _, Var _) -> (unifyHead ((t,s)::eqlst')) |
+
+					(CompoundTerm(_,_), Var _) -> (unifyHead ((t,s)::eqlst')) |
+					
+					(ListTerm _, Var _) -> (unifyHead ((t,s)::eqlst')) |  (*orient rule*)
+					
+					(CompoundTerm(f1, termList1), CompoundTerm(f2, termList2) ) -> (
+						if f1 = f2 then (
+						let pairList= (genPairList termList1 termList2) 
+						 in (match pairList with 
+							None -> None |
+							Some newConstraints -> unifyHead (eqlst' @ newConstraints)	)
+						
+
+) else (None) )               (*Decompose rule*)
+ 
+				      | (ListTerm tl1, ListTerm tl2) -> ( let pairList= (genPairList tl1 tl2) 
+						 in (match pairList with 
+							None -> None |
+							Some newConstraints -> unifyHead (eqlst' @ newConstraints)	))
+
+
+|	(Var x, _) -> (if (occurs x t) then (None)
+			else ( match (unifyHead eqlst') with
+				None -> None |
+				Some tailResult -> if (occursInSubstList x tailResult) then
+				                      (match t with 
+							Var _ -> Some tailResult |
+							_ -> Some (updateListWithElement tailResult (x,t)) ) 
+						      
+						       else (Some ((x,t)::tailResult) )  ) )
+				
+					(*eliminate rule*)
+
+|	_ -> (None)
+				
+));;
+
+
+let rec unifyPredicates (pred1,pred2) = 
+	match (pred1, pred2) with
+		(Identifier id1, Identifier id2) -> (if id1=id2 then Some [] else None) |
+		(Identifier id1, Predicate(f,tl)) -> (None) |
+		(Predicate(f,tl), Identifier id2) -> (None) |
+		(Predicate(f1,tl1), Predicate(f2,tl2)) -> (
+			if (f1 != f2) then None 
+			else( match (genPairList tl1 tl2) with
+				None -> None |
+				Some eqlst -> (unifyHead eqlst))) ;;

@@ -24,13 +24,14 @@ type program = Prog of rules * query | ProgFromQuery of query;;
 
 
 (* ================= Interpreting ================= *)
-(* Values *)
+(* Values and Memory *)
 type memory = (string * value) list
 and value =
    BoolVal of bool
-  | IntVal of int                                 | FloatVal of float
+  | IntVal of int                                 
+  | FloatVal of float
   | StringVal of string                           
-              | ListVal of value list
+  | ListVal of value list
   
 
 let make_mem x y = ([(x,y)]:memory)
@@ -82,3 +83,13 @@ let print_memory m =
                         print_value v;
                         print_string (";\n") ) in
     print_m cm
+<<<<<<< HEAD
+=======
+
+
+(*substitution*)
+type subst = (string * term) list;;
+
+(* result *)
+type result = bool * subst ;;
+>>>>>>> interpreter
