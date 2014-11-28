@@ -2,13 +2,13 @@ type token =
 | STRING of (string)
 | VARIABLE of (string)
 | NAME of (string)
-| UNSIGNEDFLOAT of (float)
-| UNSIGNEDINTEGER of (int)
-| SIGNEDFLOAT of (float)
-| SIGNEDINTEGER of (int)
+| FLOAT of (float)
+| INT of (int)
+
 | DOT
 | DOUBLEDOT
 | COLONHYPHEN
+| QUESTIONHYPHEN
 | ARROW
 | NOT
 | TERM_EQ

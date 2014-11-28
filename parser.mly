@@ -13,7 +13,7 @@
 %token COLONHYPHEN QUESTIONHYPHEN
 %token ARROW 
 %token NOT
-%token TERM_EQ TERM_INEQ IS TERM_DECOMP TERM_UNIFY TERM_NOTUNIFY
+%token TERM_EQ TERM_INEQ IS AS TERM_DECOMP TERM_UNIFY TERM_NOTUNIFY
        ARITH_EQ ARITH_INEQ ARITH_LESS ARITH_GREATER ARITH_GEQ
        ARITH_LEQ TERM_ORDER_EQ TERM_ORDER_INEQ TERM_ORDER_GREATER
        TERM_ORDER_LESS TERM_ORDER_GEQ TERM_ORDER_LEQ
@@ -29,7 +29,7 @@
 %token EOF
 
 %token <bool> BOOL
-
+%token DOLLAR 
 
 /* Define the "goal" nonterminal of the grammar: */
 %type <ProjCommon.rules> rules
@@ -50,61 +50,59 @@ atomic_term:
 
 compound_term_1:
   |atomic_term			{ $1 }
-  |CUT					{ CompoundTerm ("!",[])}
+  |DOLLAR atomic_term		{ CompoundTerm ("$",[$2])}
   
-compound_term_2:
+compound_term_200:
   |compound_term_1 {$1}
-  |compound_term_2 MULT compound_term_1 { CompoundTerm ("*",[$1;$3])}
-  |compound_term_2 DIV compound_term_1 	{ CompoundTerm ("/",[$1;$3])}
-  |compound_term_2 VAR_INSTANTIATED compound_term_1 { CompoundTerm ("^",[$1;$3])}
-  |compound_term_2 BITWISE_AND compound_term_1 	{ CompoundTerm ("\\/",[$1;$3])}
-  |compound_term_2 BITWISE_OR compound_term_1 	{ CompoundTerm ("/\\",[$1;$3])}
-  |compound_term_2 BITWISE_NOT compound_term_1 	{ CompoundTerm ("\\",[$1;$3])}
-  
-compound_term_3:
-  |compound_term_2 {$1}
-  |compound_term_3 PLUS compound_term_2 { CompoundTerm ("+",[$1;$3])}
-  |compound_term_3 MINUS compound_term_2 { CompoundTerm ("-",[$1;$3])}
+  |compound_term_1 VAR_INSTANTIATED compound_term_200 { CompoundTerm ("^",[$1;$3])}
 
-compound_term_4:
-  |compound_term_3 {$1}
-  |compound_term_4 DOUBLECOLON compound_term_3 { CompoundTerm ("::",[$1;$3])}
+compound_term_400:
+  |compound_term_200 {$1}
+  |compound_term_400 MULT compound_term_200 { CompoundTerm ("*",[$1;$3])}
+  |compound_term_400 DIV compound_term_200 	{ CompoundTerm ("/",[$1;$3])}
   
-compound_term_5:
-  |compound_term_4 {$1}
-  |compound_term_5 ARITH_EQ compound_term_4				{ CompoundTerm ("=:=",[$1;$3])}
-  |compound_term_5 ARITH_INEQ compound_term_4 			{ CompoundTerm ("=\\=",[$1;$3])}
-  |compound_term_5 ARITH_GEQ compound_term_4 			{ CompoundTerm (">=",[$1;$3])} 
-  |compound_term_5 ARITH_LEQ compound_term_4 			{ CompoundTerm ("=<",[$1;$3])} 
-  |compound_term_5 ARITH_GREATER compound_term_4 		{ CompoundTerm (">",[$1;$3])} 
-  |compound_term_5 ARITH_LESS compound_term_4 			{ CompoundTerm ("<",[$1;$3])} 
-  
-  |compound_term_5 TERM_UNIFY compound_term_4 			{ CompoundTerm ("=",[$1;$3])}
-  |compound_term_5 TERM_NOTUNIFY compound_term_4 		{ CompoundTerm ("\\=",[$1;$3])}
-  |compound_term_5 TERM_EQ compound_term_4 				{ CompoundTerm ("==",[$1;$3])}  
-  |compound_term_5 TERM_INEQ compound_term_4 			{ CompoundTerm ("\\==",[$1;$3])} 
-  |compound_term_5 IS compound_term_4 					{ CompoundTerm ("is",[$1;$3])} 
-  |compound_term_5 TERM_DECOMP compound_term_4 			{ CompoundTerm ("=..",[$1;$3])} 
+compound_term_500:
+  |compound_term_400 {$1}
+  |compound_term_500 PLUS compound_term_400 { CompoundTerm ("+",[$1;$3])}
+  |compound_term_500 MINUS compound_term_400 { CompoundTerm ("-",[$1;$3])}
+  |compound_term_500 BITWISE_AND compound_term_400 	{ CompoundTerm ("\\/",[$1;$3])}
+  |compound_term_500 BITWISE_OR compound_term_400 	{ CompoundTerm ("/\\",[$1;$3])}
 
-  |compound_term_5 TERM_ORDER_GEQ compound_term_4		{ CompoundTerm ("@>=",[$1;$3])} 
-  |compound_term_5 TERM_ORDER_LEQ compound_term_4 		{ CompoundTerm ("@=<",[$1;$3])} 
-  |compound_term_5 TERM_ORDER_GREATER compound_term_4 	{ CompoundTerm ("@>",[$1;$3])} 
-  |compound_term_5 TERM_ORDER_LESS compound_term_4 		{ CompoundTerm ("@<",[$1;$3])} 
-  |compound_term_5 TERM_ORDER_EQ compound_term_4 		{ CompoundTerm ("=@=",[$1;$3])} 
-  |compound_term_5 TERM_ORDER_INEQ compound_term_4 		{ CompoundTerm ("\\=@=",[$1;$3])} 
+compound_term_600:
+  |compound_term_500 {$1}
+  |compound_term_500 COLON compound_term_600 { CompoundTerm (":",[$1;$3])}
   
-compound_term_6:
-  |compound_term_5 {$1}
-  |NOT compound_term_5 	{ CompoundTerm ("not",[$2])}
+compound_term_700:
+  |compound_term_600 {$1}
+  |compound_term_600 ARITH_EQ compound_term_600				{ CompoundTerm ("=:=",[$1;$3])}
+  |compound_term_600 ARITH_INEQ compound_term_600 			{ CompoundTerm ("=\\=",[$1;$3])}
+  |compound_term_600 ARITH_GEQ compound_term_600 			{ CompoundTerm (">=",[$1;$3])} 
+  |compound_term_600 ARITH_LEQ compound_term_600 			{ CompoundTerm ("=<",[$1;$3])} 
+  |compound_term_600 ARITH_GREATER compound_term_600 		{ CompoundTerm (">",[$1;$3])} 
+  |compound_term_600 ARITH_LESS compound_term_600 			{ CompoundTerm ("<",[$1;$3])} 
   
+  |compound_term_600 TERM_UNIFY compound_term_600 			{ CompoundTerm ("=",[$1;$3])}
+  |compound_term_600 TERM_NOTUNIFY compound_term_600 		{ CompoundTerm ("\\=",[$1;$3])}
+  |compound_term_600 TERM_EQ compound_term_600 				{ CompoundTerm ("==",[$1;$3])}  
+  |compound_term_600 TERM_INEQ compound_term_600 			{ CompoundTerm ("\\==",[$1;$3])} 
+  |compound_term_600 IS compound_term_600 					{ CompoundTerm ("is",[$1;$3])} 
+  |compound_term_600 AS compound_term_600 					{ CompoundTerm ("as",[$1;$3])} 
+  |compound_term_600 TERM_DECOMP compound_term_600 			{ CompoundTerm ("=..",[$1;$3])} 
 
-compound_term_7:
-  |compound_term_6 {$1}
-  |compound_term_6 ARROW compound_term_7	{ CompoundTerm ("->",[$1;$3])}
+  |compound_term_600 TERM_ORDER_GEQ compound_term_600		{ CompoundTerm ("@>=",[$1;$3])} 
+  |compound_term_600 TERM_ORDER_LEQ compound_term_600 		{ CompoundTerm ("@=<",[$1;$3])} 
+  |compound_term_600 TERM_ORDER_GREATER compound_term_600 	{ CompoundTerm ("@>",[$1;$3])} 
+  |compound_term_600 TERM_ORDER_LESS compound_term_600 		{ CompoundTerm ("@<",[$1;$3])} 
+  |compound_term_600 TERM_ORDER_EQ compound_term_600 		{ CompoundTerm ("=@=",[$1;$3])} 
+  |compound_term_600 TERM_ORDER_INEQ compound_term_600 		{ CompoundTerm ("\\=@=",[$1;$3])} 
+
+compound_term_1050:
+  |compound_term_700 {$1}
+  |compound_term_700 ARROW compound_term_1050	{ CompoundTerm ("->",[$1;$3])}
  
     
  compound_term:
-  |compound_term_7 {$1}
+  |compound_term_1050 {$1}
 
 list_term:
 | LBRACKET RBRACKET					{ ListTerm [] }
@@ -124,8 +122,9 @@ predicate:
 | NAME								{ Identifier $1 }
 
 predicate_list:
-| predicate								{ [$1] }
-| predicate COMMA predicate_list	 	{ $1::$3 }
+| predicate								{ ([$1],[]) }
+| predicate COMMA predicate_list	 	{ ($1::$3, ","::snd($3)) }
+| predicate SEMICOLON predicate_list	{ ($1::$3, ";"::snd($3)) }
 
 clause:
 | predicate DOT								{ Fact $1 }

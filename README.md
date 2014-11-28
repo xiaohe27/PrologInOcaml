@@ -14,9 +14,9 @@ sh make.sh
 #Run 
 ##Test parser
 1. ocaml (enter ocaml command window)
-2. #load "lexer.cmo";;
-3. #load "parser.cmo";;
-4. #use "glue.ml";;
+#load "lexer.cmo";;
+#load "parser.cmo";;
+#use "glue.ml";;
 
 
 

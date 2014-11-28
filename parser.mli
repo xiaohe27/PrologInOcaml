@@ -13,6 +13,7 @@ type token =
   | TERM_EQ
   | TERM_INEQ
   | IS
+  | AS
   | TERM_DECOMP
   | TERM_UNIFY
   | TERM_NOTUNIFY
@@ -50,6 +51,7 @@ type token =
   | PIPE
   | EOF
   | BOOL of (bool)
+  | DOLLAR
 
 val rules :
   (Lexing.lexbuf  -> token) -> Lexing.lexbuf -> ProjCommon.rules
