@@ -17,7 +17,7 @@ let name = quoted_name | word | symbol+ | solo_char (* valid prolog names *)
 let variable = (capital | underline) alpha* (* prolog variables *)
 
  
-let int = '-'? digit+
+let int = digit+
 let frac = '.' digit+
 let exp = ['e' 'E'] ['-' '+']? digit+
 let float = int frac? exp?

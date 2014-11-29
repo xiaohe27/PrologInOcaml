@@ -7,8 +7,8 @@
 %token <string> STRING  
 %token <string> VARIABLE
 %token <string> NAME
-%token <float> FLOAT
-%token <int> INT
+%token <float> FLOAT /*unsigned*/
+%token <int> INT /*unsigned*/
 %token DOT DOUBLEDOT
 %token COLONHYPHEN QUESTIONHYPHEN
 %token ARROW 
@@ -42,7 +42,9 @@
 atomic_term:
   | VARIABLE				{ Var $1 }
   | INT						{ ConstTerm(IntConst $1) }
+  | MINUS INT				{ ConstTerm(IntConst (-$2)) }
   | FLOAT					{ ConstTerm(FloatConst $1) }
+  | MINUS FLOAT				{ ConstTerm(FloatConst (-.$2)) }
   | STRING					{ ConstTerm(StringConst $1) }
   | BOOL					{ ConstTerm(BoolConst $1) }
   | NAME					{ ConstTerm(StringConst $1) }
@@ -137,6 +139,7 @@ predicate:
   |compound_term_600 TERM_ORDER_LESS compound_term_600 		{ Predicate ("@<",[$1;$3])} 
   |compound_term_600 TERM_ORDER_EQ compound_term_600 		{ Predicate ("=@=",[$1;$3])} 
   |compound_term_600 TERM_ORDER_INEQ compound_term_600 		{ Predicate ("\\=@=",[$1;$3])} 
+  |compound_term_600 IS compound_term_600 					{ Predicate ("is",[$1;$3])} 
   
 predicate_list:
 | predicate								{ ([$1],[]) }
