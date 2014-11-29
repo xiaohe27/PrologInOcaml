@@ -73,7 +73,6 @@ compound_term_600:
   |compound_term_500 COLON compound_term_600 { CompoundTerm (":",[$1;$3])}
   
 compound_term_700:
-  |compound_term_600 {$1}
   |compound_term_600 ARITH_EQ compound_term_600				{ CompoundTerm ("=:=",[$1;$3])}
   |compound_term_600 ARITH_INEQ compound_term_600 			{ CompoundTerm ("=\\=",[$1;$3])}
   |compound_term_600 ARITH_GEQ compound_term_600 			{ CompoundTerm (">=",[$1;$3])} 
@@ -97,6 +96,7 @@ compound_term_700:
   |compound_term_600 TERM_ORDER_INEQ compound_term_600 		{ CompoundTerm ("\\=@=",[$1;$3])} 
 
 compound_term_1050:
+  |compound_term_600 {$1}
   |compound_term_700 {$1}
   |compound_term_700 ARROW compound_term_1050	{ CompoundTerm ("->",[$1;$3])}
  
@@ -121,6 +121,23 @@ predicate:
 | NAME LPAREN term_list RPAREN    	{ Predicate ($1,$3) }
 | NAME								{ Identifier $1 }
 
+  |compound_term_600 ARITH_EQ compound_term_600				{ Predicate ("=:=",[$1;$3])}
+  |compound_term_600 ARITH_INEQ compound_term_600 			{ Predicate ("=\\=",[$1;$3])}
+  |compound_term_600 ARITH_GEQ compound_term_600 			{ Predicate (">=",[$1;$3])} 
+  |compound_term_600 ARITH_LEQ compound_term_600 			{ Predicate ("=<",[$1;$3])} 
+  |compound_term_600 ARITH_GREATER compound_term_600 		{ Predicate (">",[$1;$3])} 
+  |compound_term_600 ARITH_LESS compound_term_600 			{ Predicate ("<",[$1;$3])} 
+  |compound_term_600 TERM_UNIFY compound_term_600 			{ Predicate ("=",[$1;$3])}
+  |compound_term_600 TERM_NOTUNIFY compound_term_600 		{ Predicate ("\\=",[$1;$3])}
+  |compound_term_600 TERM_EQ compound_term_600 				{ Predicate ("==",[$1;$3])}  
+  |compound_term_600 TERM_INEQ compound_term_600 			{ Predicate ("\\==",[$1;$3])} 
+  |compound_term_600 TERM_ORDER_GEQ compound_term_600		{ Predicate ("@>=",[$1;$3])} 
+  |compound_term_600 TERM_ORDER_LEQ compound_term_600 		{ Predicate ("@=<",[$1;$3])} 
+  |compound_term_600 TERM_ORDER_GREATER compound_term_600 	{ Predicate ("@>",[$1;$3])} 
+  |compound_term_600 TERM_ORDER_LESS compound_term_600 		{ Predicate ("@<",[$1;$3])} 
+  |compound_term_600 TERM_ORDER_EQ compound_term_600 		{ Predicate ("=@=",[$1;$3])} 
+  |compound_term_600 TERM_ORDER_INEQ compound_term_600 		{ Predicate ("\\=@=",[$1;$3])} 
+  
 predicate_list:
 | predicate								{ ([$1],[]) }
 | predicate COMMA predicate_list	 	{ ($1::(fst $3), ","::snd($3)) }

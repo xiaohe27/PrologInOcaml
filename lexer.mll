@@ -18,9 +18,9 @@ let variable = (capital | underline) alpha* (* prolog variables *)
 
  
 let int = '-'? digit+
-let frac = '.' digit*
+let frac = '.' digit+
 let exp = ['e' 'E'] ['-' '+']? digit+
-let float = int frac exp?
+let float = int frac? exp?
 
 let whitespace = [' ' '\t' '\n']
 let open_comment = "(*"
