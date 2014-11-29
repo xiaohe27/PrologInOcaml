@@ -3,6 +3,13 @@ open Unify
 open Evaluator
 open Interpreter
 
+let pgm=Prog
+ (RuleList
+   [Fact (Predicate ("cat", [ConstTerm (StringConst "tom")]));
+    Rule (Predicate ("animal", [Var "X"]),
+     ([Predicate ("cat", [Var "X"])], []))],
+ Query ([Predicate ("animal", [Var "X"])], []));;
+
 let tomTerm=ConstTerm(StringConst "tom");;
 
 let pred=Predicate("cat", [tomTerm]);;
@@ -19,3 +26,7 @@ let query= Query([predX],[]);;
 let result=consult rules query;;
 
 let eval=eval_predicate rules predX;;
+
+let Prog(rules,query)= pgm;;
+
+let result=consult rules query;;

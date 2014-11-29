@@ -97,3 +97,17 @@ let rec string_of_subst subst = match subst with
 				[] -> "" |
 				(v,t)::tail -> (v ^ "=" ^ (string_of_term t)) ^ 
 				 ".\n" ^ (string_of_subst tail) ;;
+
+let string_of_predicate pred=match pred with
+				Identifier(id) -> id |
+				Predicate(f,tl) -> (f ^ "(" ^
+				(stringOfTermList tl) ^ ")" ) ;;
+
+let rec stringOfPredList predList connList= match predList with
+					[] -> "" |
+					[pred] -> (string_of_predicate pred) |
+					pred::tail -> ((string_of_predicate (pred)) ^ (List.hd connList) ^ (stringOfPredList tail (List.tl connList)));;
+
+let string_of_clause clause = match clause with
+				Fact fp -> ("Fact "^(string_of_predicate fp) ^ "\t") |
+				Rule (hp,(body,connList)) -> ("Rule: "^(string_of_predicate hp) ^ " :- " ^ (stringOfPredList body connList));;

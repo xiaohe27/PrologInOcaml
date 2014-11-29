@@ -12,17 +12,29 @@ let getBool boolVal = match boolVal with
 		      _ -> (raise (Failure "Expect a bool val!"));;
 
 (* consult the predicate in user-defined rules *)
-let rec consultSinglePred rules predicate = match rules with 
+
+let rec consultSinglePred_debug (rules, usedRules) predicate debug = match rules with 
                                           RuleList ([]) -> (false, []) |
                                           RuleList (clause::tail) -> (match clause with 
-								     Fact fp -> (match(Unify.unifyPredicates (fp,predicate) ) with 
-										None -> (consultSinglePred (RuleList tail) predicate ) |
+								     Fact fp -> (
+								       let _=(
+								       if debug then(
+								       print_string ((string_of_predicate predicate) ^ " is trying to match fact "
+										    ^ (string_of_predicate fp) ^ "\n");) else ()) in
+								       match(Unify.unifyPredicates (fp,predicate) ) with 
+										None -> (consultSinglePred_debug (RuleList tail, (usedRules @ [clause])) predicate debug ) |
 										Some sig0 -> (true, sig0) ) |
 
-								     Rule (headPred, (body,connList)) -> (match (Unify.unifyPredicates (headPred, predicate)) with
-											       None -> (consultSinglePred (RuleList tail) predicate) |
+								     Rule (headPred, (body,connList)) -> (
+								      let _=( if debug then(
+								        print_string ((string_of_predicate predicate) ^ " is trying to match the "
+										    ^ (string_of_clause (clause)) ^ "\n");) else ()) in
+
+								       match (Unify.unifyPredicates (headPred, predicate)) with
+											       None -> (consultSinglePred_debug (RuleList tail, (usedRules @ [clause]))  predicate debug) |
 											       Some sig0 -> (let newBody= List.map (substInPredicate sig0) body in
-													 match (consult rules (Query (newBody, connList))) with
+													 match (consult (RuleList(usedRules @ (clause::tail)))
+														  (Query (newBody, connList))) with
 													   (false,_) -> (false,[]) |
 													   (true, tailSig) -> (match (Unify.composeSubst tailSig sig0) with
 															       None -> (true, []) |
@@ -67,12 +79,13 @@ and eval_predicate rules predicate = match predicate with
                                    Identifier fact -> ( match fact with
 				                         "true" -> (true,[]) |
 							 "false" -> (false,[]) |
-							 _ -> consultSinglePred rules predicate ) |
+							 _ -> consultSinglePred (rules,[]) predicate ) |
 						                  
 
 				   Predicate (f, tl) -> (if (Evaluator.isBuiltInOp f)   (*It is built in operation*)
-				                          
-				                          then (if (List.length tl) == 1 then (
+				                          				       
+				                          then ( print_string (f ^ "is a built-in op.\n"); 
+				                            if (List.length tl) == 1 then (
 							    let singleTerm = (List.hd tl) in
 
 							    if (Evaluator.isTypeTesting f) then  (*it is type testing*)
@@ -110,8 +123,10 @@ and eval_predicate rules predicate = match predicate with
 
 									   else (raise (Failure "predicate should return boolean!")) ) )) )  )    
 
-				                          else  ( consultSinglePred rules predicate) );;  (* User defined functions *)
+				                          else  ( print_string ((ProjCommon.string_of_predicate predicate)^" is user-defined!\n");
+								  consultSinglePred (rules,[]) predicate) )  (* User defined functions *)
 
 
+and consultSinglePred (rules,unusedRules) predicate = consultSinglePred_debug (rules,unusedRules) predicate true;;
 
 
