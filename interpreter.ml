@@ -11,6 +11,29 @@ let getBool boolVal = match boolVal with
 		      BoolVal false -> false |
 		      _ -> (raise (Failure "Expect a bool val!"));;
 
+(*rename the free vars in the body of the rule before applying the subst gen from the unification of head and query.*)
+let rec renameFreeVarsInClause clause =
+            match clause with
+              Fact fp -> [fp] |
+              Rule (headPred, (body,_)) -> (
+	       let freeVarsInBody= ProjCommon.freeVarsInClause clause in
+	       let numOfFreeVars= List.length freeVarsInBody in
+	       if numOfFreeVars = 0 then (body) else(
+
+	       let binders= ProjCommon.freeVarsInPredicate headPred in
+	       let genFreshVars= ProjCommon.get_n_freshVars numOfFreeVars (freeVarsInBody @ binders) in
+	       let subst4Fresh= genSubst4Fresh freeVarsInBody genFreshVars in 
+	       (List.map (Unify.substInPredicate subst4Fresh) body)  
+	         )) 
+
+and genSubst4Fresh oldVarList newNameList =
+  if (List.length oldVarList) != (List.length newNameList) then (raise (Failure "cannot gen subst 4 fresh because two list have diff len."))
+ else (match (oldVarList, newNameList) with
+      ([],_) -> [] |
+      (_,[]) -> [] |
+      (v1::tail1 , n1::tail2) -> ( (v1,Var n1)::genSubst4Fresh tail1 tail2 )  )
+    ;;
+
 (* consult the predicate in user-defined rules *)
 
 let rec consultSinglePred_debug (rules, usedRules) predicate debug = match rules with 
@@ -32,7 +55,9 @@ let rec consultSinglePred_debug (rules, usedRules) predicate debug = match rules
 
 								       match (Unify.unifyPredicates (headPred, predicate)) with
 											       None -> (consultSinglePred_debug (RuleList tail, (usedRules @ [clause]))  predicate debug) |
-											       Some sig0 -> (let newBody= List.map (substInPredicate sig0) body in
+											       Some sig0 -> (
+												 let renamedBody= renameFreeVarsInClause clause  in
+												 let newBody= List.map (substInPredicate sig0) renamedBody in
 													 match (consult (RuleList(usedRules @ (clause::tail)))
 														  (Query (newBody, ","::connList)) true ) with
 													   (false,_) -> (false,[]) |
@@ -57,6 +82,8 @@ and consult rules query lastBool =
 
          fstPred::tailPredList -> (let (fstBool, fstSig) = (eval_predicate rules fstPred) in
 	                                let newTailPredList= List.map (substInPredicate fstSig) tailPredList in
+					print_string ((stringOfPredList newTailPredList (List.tl connList)) ^ " is the updated pred list\n");
+
 	                                let newLastBool= (match connList with
 					  ","::_ -> (fstBool && lastBool) |
 					  ";"::_ -> (fstBool || lastBool) |
@@ -99,6 +126,8 @@ and eval_predicate rules predicate = match predicate with
 								     "is" -> (let lhs= fst eq in 
 									      let rhs= snd eq in
 									     let rhsVal = Evaluator.eval_term rhs in
+									     
+									     print_string ((string_of_term lhs) ^ " is " ^ (string_of_term rhs));
 									     
 									     match lhs with 
 									      ConstTerm _ -> (match(Evaluator.binOpApply "=:=" (Evaluator.eval_term lhs,rhsVal)) with

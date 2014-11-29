@@ -111,3 +111,101 @@ let rec stringOfPredList predList connList= match predList with
 let string_of_clause clause = match clause with
 				Fact fp -> ("Fact "^(string_of_predicate fp) ^ "\t") |
 				Rule (hp,(body,connList)) -> ("Rule: "^(string_of_predicate hp) ^ " :- " ^ (stringOfPredList body connList));;
+
+
+(* Fresh Name stuff *)
+
+let int_to_string n =
+    let int_to_int_26_list n =
+        let rec aux n l =
+            if n <= 0 then l else let c = ((n-1) mod 26) in aux ((n -(c+1))/26) (c::l)
+        in aux n []
+    in
+        let rec aux l = match l with [] -> ""
+                            | n::ns -> (String.make 1 (Char.chr (n + 97))) ^ aux ns
+        in aux (int_to_int_26_list n);;
+
+let freshFor lst = 
+    let rec fresh_ n = 
+        if List.mem (int_to_string n) lst
+           then fresh_ (n+1)
+        else int_to_string n
+    in fresh_ 1 ;;
+
+
+let rec get_n_freshVars n lst =
+	if(n <= 0) then (raise (Failure "Cannot get 0 fresh vars"))
+	else (let fstFresh= freshFor lst in (if n=1 then ([fstFresh])
+		else (fstFresh::(get_n_freshVars (n-1) (fstFresh::lst)))) );;
+	
+
+(* End Fresh name stuff *)
+
+(*Get free vars in a term*)
+let rec freeVarsInTerm term = 
+			match term with 
+			Var v -> [v] |
+			ConstTerm _ -> [] |
+			CompoundTerm(f,tl) -> (
+				toSingleStrArr (List.map (freeVarsInTerm) tl) ) |
+
+			ListTerm(tl) -> (
+				toSingleStrArr (List.map (freeVarsInTerm) tl)) and
+
+toSingleStrArr listList = 
+	match listList with 
+	[] -> [] |
+	[singleList] -> (
+	    match singleList with
+		[] -> [] |
+		str::tail -> (str::(toSingleStrArr [tail])) ) |
+
+	fstList::tailListList -> (
+		fstList @ (toSingleStrArr (tailListList))		    	);;
+
+
+
+(*Get free vars in other structures*)
+let rec rmXInList x lst = match lst with []->[] |
+				h::t->if h=x then rmXInList x t
+					else h::(rmXInList x t);;
+
+let rec rmDup lst = match lst with []->[] |
+			h::t-> h::(rmDup (rmXInList h t));;
+
+
+let freeVarsInPredicate pred = 
+	match pred with
+	Identifier id -> ([]) |
+	Predicate (f,tl) -> (toSingleStrArr (List.map (freeVarsInTerm) tl)) ;;
+
+let rec listSubtract list1 list2 = 
+	match list2 with
+	[] -> list1 |
+	h::t -> let newList1 = (rmXInList h list1)
+		in(listSubtract newList1 t) ;;
+
+let freeVarsInClause clause = 
+	match clause with 
+	Fact pred -> (freeVarsInPredicate pred) |
+	Rule (head, (body,conn)) -> (let binders= freeVarsInPredicate head in
+		let freeVarInBody = (toSingleStrArr (List.map (freeVarsInPredicate) body) ) in rmDup(listSubtract freeVarInBody binders) ) ;;
+	
+let freeVarsInQuery query=
+	match query with 
+	Query(predList,connList) -> 
+		(toSingleStrArr (List.map (freeVarsInPredicate) predList) );;
+
+let freeVarsInRuleList rules = 
+	match rules with
+	RuleList(clauseList) -> 
+		(toSingleStrArr (List.map (freeVarsInClause) clauseList));;
+
+let freeVarsInProgram pgm =
+	match pgm with
+	Prog(rules,query) -> (
+		let binders= freeVarsInQuery query in
+		let freeVarsInRules= freeVarsInRuleList rules in
+		rmDup (listSubtract freeVarsInRules binders) ) | (*not precise*)
+	
+	ProgFromQuery(query) -> (freeVarsInQuery query) ;;
