@@ -142,7 +142,7 @@ predicate:
   |compound_term_600 IS compound_term_600 					{ Predicate ("is",[$1;$3])} 
   
 predicate_list:
-| predicate								{ ([$1],[","]) }
+| predicate								{ ([$1],[]) }
 | predicate COMMA predicate_list	 	{ ($1::(fst $3), ","::snd($3)) }
 | predicate SEMICOLON predicate_list	{ ($1::(fst $3), ";"::snd($3)) }
 
