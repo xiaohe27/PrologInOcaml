@@ -34,7 +34,7 @@ let rec consultSinglePred_debug (rules, usedRules) predicate debug = match rules
 											       None -> (consultSinglePred_debug (RuleList tail, (usedRules @ [clause]))  predicate debug) |
 											       Some sig0 -> (let newBody= List.map (substInPredicate sig0) body in
 													 match (consult (RuleList(usedRules @ (clause::tail)))
-														  (Query (newBody, connList))) with
+														  (Query (newBody, ","::connList)) true ) with
 													   (false,_) -> (false,[]) |
 													   (true, tailSig) -> (match (Unify.composeSubst tailSig sig0) with
 															       None -> (true, []) |
@@ -42,35 +42,27 @@ let rec consultSinglePred_debug (rules, usedRules) predicate debug = match rules
 
      (*Consult a list of predicates*)
      (*returns a result which is of the form bool * subst*)
-     (*predicates are left-assoc!*)
-and consult rules query =
+     (*predicates are left-assoc! But it needs to eval from left to right!*)
+and consult rules query lastBool =
     match query with Query(predList, connList) -> (
    
     match predList with 
 	 [] -> (raise (Failure "rule's body is empty!")) |
 
-	 [singlePred] -> (eval_predicate rules singlePred) |
+	 [singlePred] -> (let (singleBool, singleSig) =(eval_predicate rules singlePred) in
+			  match connList with 
+			  ","::connTail -> ((singleBool && lastBool), singleSig) |
+			  ";"::connTail -> ((singleBool || lastBool), singleSig) |
+			  _ -> (raise (Failure "Not enough connectives or unknown connective."))) |
 
-         _ -> (let lastPred= List.nth predList ((List.length predList) - 1) in
-	       let frontPredList = rmLastItem predList in
-	       let lastConn= List.nth connList ((List.length connList)-1) in
-	       let frontConnList = rmLastItem connList in
-               
-	       let lastPredResult= eval_predicate rules lastPred in
-	       let frontPredListResult= consult rules (Query(frontPredList, frontConnList)) in
-
-	       let frontBool= fst frontPredListResult in
-	       let lastBool= fst lastPredResult in
-
-	       let finalSigOption = Unify.composeSubst (snd lastPredResult) (snd frontPredListResult) in
-	       let finalSig = (match finalSigOption with 
-			       None -> [] |
-			       Some finSigma -> finSigma) in
-
-	      match (lastConn) with
-	      (",") -> (frontBool && lastBool, finalSig) |
-	      (";") -> (frontBool || lastBool ,finalSig) |
-	      _ -> (raise (Failure "unknown logical connective!") ) )  )
+         fstPred::tailPredList -> (let (fstBool, fstSig) = (eval_predicate rules fstPred) in
+	                                let newTailPredList= List.map (substInPredicate fstSig) tailPredList in
+	                                let newLastBool= (match connList with
+					  ","::_ -> (fstBool && lastBool) |
+					  ";"::_ -> (fstBool || lastBool) |
+					  _ -> (raise (Failure "unknown connective."))) in
+					(consult rules (Query(newTailPredList, List.tl connList)) newLastBool)
+                                         ) )
 
 
 
@@ -84,7 +76,7 @@ and eval_predicate rules predicate = match predicate with
 
 				   Predicate (f, tl) -> (if (Evaluator.isBuiltInOp f)   (*It is built in operation*)
 				                          				       
-				                          then ( print_string (f ^ "is a built-in op.\n"); 
+				                          then ( print_string (f ^ " is a built-in op.\n"); 
 				                            if (List.length tl) == 1 then (
 							    let singleTerm = (List.hd tl) in
 

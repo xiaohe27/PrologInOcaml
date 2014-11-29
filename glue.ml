@@ -16,9 +16,13 @@ let parseRules s = Parser.rules Lexer.token (Lexing.from_string s);;
 let parseProgram s = Parser.program Lexer.token (Lexing.from_string s);;
 
 (*Given a prolog program AST in ocaml, execute its semantics and return a result*)
+let addAComma q = match q with 
+                      Query (pl,connList) -> (Query (pl, (","::connList)) );;
+
 let execProgram pgm = match pgm with 
-                        Prog(rules,query) -> (Interpreter.consult rules query) |
-			ProgFromQuery(query) -> (Interpreter.consult (RuleList([])) query) ;;
+                        Prog(rules,query) -> (Interpreter.consult rules (addAComma query) true ) |
+			ProgFromQuery(query) -> (Interpreter.consult (RuleList([])) (addAComma query) true );; 
+
 
 (* print result *)
 let printResult result = match result with
