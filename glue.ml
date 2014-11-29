@@ -25,5 +25,5 @@ let printResult result = match result with
                           (b,sigma) -> (print_string ("\n"^ (string_of_bool b) ^ ".\n" ^ (ProjCommon.string_of_subst sigma) ^ "\n");) ;;
 
 (* A user-friendly way of simulating prolog program: pretty print the result. *)
-let simulatePrologProgram pgmStr = let pgm = parseProgram pgmStr in
+let simulateProgram pgmStr = let pgm = parseProgram pgmStr in
                                    let result= execProgram pgm in printResult result;;
