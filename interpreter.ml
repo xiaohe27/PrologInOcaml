@@ -12,7 +12,7 @@ let getBool boolVal = match boolVal with
 		      _ -> (raise (Failure "Expect a bool val!"));;
 
 (*rename the free vars in the body of the rule before applying the subst gen from the unification of head and query.*)
-let rec renameFreeVarsInClause clause =
+let rec renameFreeVarsInClause avoidList clause =
             match clause with
               Fact fp -> [fp] |
               Rule (headPred, (body,_)) -> (
@@ -21,7 +21,7 @@ let rec renameFreeVarsInClause clause =
 	       if numOfFreeVars = 0 then (body) else(
 
 	       let binders= ProjCommon.freeVarsInPredicate headPred in
-	       let genFreshVars= ProjCommon.get_n_freshVars numOfFreeVars (freeVarsInBody @ binders) in
+	       let genFreshVars= ProjCommon.get_n_freshVars numOfFreeVars (avoidList @ binders) in
 	       let subst4Fresh= genSubst4Fresh freeVarsInBody genFreshVars in 
 	       (List.map (Unify.substInPredicate subst4Fresh) body)  
 	         )) 
@@ -33,6 +33,23 @@ and genSubst4Fresh oldVarList newNameList =
       (_,[]) -> [] |
       (v1::tail1 , n1::tail2) -> ( (v1,Var n1)::genSubst4Fresh tail1 tail2 )  )
     ;;
+
+
+let rec getAVList subst = 
+  let termList= getTermList subst in
+   (getVarStrList termList)
+
+and getTermList sigma= 
+ match sigma with 
+ []-> [] |
+ (v,t)::tail0 -> (t::(getTermList tail0) )
+
+and getVarStrList termList =
+  match termList with
+   [] -> [] |
+   term::tail -> (match term with 
+		 Var x -> (x::(getVarStrList tail)) |
+		 _ -> (getVarStrList tail) );;
 
 (* consult the predicate in user-defined rules *)
 
@@ -50,14 +67,28 @@ let rec consultSinglePred_debug (rules, usedRules) predicate debug = match rules
 
 								     Rule (headPred, (body,connList)) -> (
 								      let _=( if debug then(
-								        print_string ((string_of_predicate predicate) ^ " is trying to match the "
+								        print_string ("\n" ^ (string_of_predicate predicate) ^ " is trying to match the "
 										    ^ (string_of_clause (clause)) ^ "\n");) else ()) in
 
 								       match (Unify.unifyPredicates (headPred, predicate)) with
 											       None -> (consultSinglePred_debug (RuleList tail, (usedRules @ [clause]))  predicate debug) |
 											       Some sig0 -> (
-												 let renamedBody= renameFreeVarsInClause clause  in
+
+let _= ( if debug then
+(print_string ("\n after unifying head and query, the following subst function is gen:\n" ^
+	     (ProjCommon.string_of_subst sig0)^"\n");) else ()) in
+                                                                                                 let avoidList= getAVList sig0 in
+												 let renamedBody= renameFreeVarsInClause avoidList clause in
+
+let _= ( if debug then (
+print_string ("\nAfter renaming, the body of the rule becomes:\n" ^
+	     (ProjCommon.stringOfPredList renamedBody connList) ^"\n" );) else ()) in
 												 let newBody= List.map (substInPredicate sig0) renamedBody in
+
+let _= ( if debug then (
+print_string ("\nAfter applying the subst function gen from unification, new body is :\n"
+	     ^ (ProjCommon.stringOfPredList newBody connList) ^"\n" );) else ()) in
+
 													 match (consult (RuleList(usedRules @ (clause::tail)))
 														  (Query (newBody, ","::connList)) true ) with
 													   (false,_) -> (false,[]) |
@@ -127,14 +158,21 @@ and eval_predicate rules predicate = match predicate with
 									      let rhs= snd eq in
 									     let rhsVal = Evaluator.eval_term rhs in
 									     
-									     print_string ((string_of_term lhs) ^ " is " ^ (string_of_term rhs));
+								    
 									     
 									     match lhs with 
-									      ConstTerm _ -> (match(Evaluator.binOpApply "=:=" (Evaluator.eval_term lhs,rhsVal)) with
+									      ConstTerm _ -> (
+										print_string ("\nlhs is "^ (string_of_term lhs)
+											      ^ " and it is constant,  eq op be applied on "
+											      ^ (string_of_term lhs) ^" and "^ (string_of_term rhs) ^ "\n" );
+
+										match(Evaluator.binOpApply "=:=" (Evaluator.eval_term lhs,rhsVal)) with
 									                      BoolVal false -> (false,[]) |
 											      BoolVal true -> (true,[]) |
 											      _ -> (raise (Failure "should ret BoolVal")) ) |
-									      Var x -> (true, [(x,Evaluator.val2Term rhsVal)]) |
+									      Var x -> 
+										print_string ("\nlhs is "^(string_of_term lhs) ^", and it is a var\n");
+										(true, [(x,Evaluator.val2Term rhsVal)]) |
 									      _ -> (false, [])) |
 
 								     _ -> (if (Evaluator.retBool f) then (match (binOpApply f (eval_term (fst eq), eval_term (snd eq)))
