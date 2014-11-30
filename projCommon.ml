@@ -8,10 +8,11 @@ BoolConst of bool
 
 type term = Var of string | ConstTerm of const |
 		CompoundTerm of string * (term list) |
-            ListTerm of term list;;
+            ListTerm of term list |
+	    PredAsTerm of predicate
 
 
-type predicate = Identifier of string | Predicate of string * (term list);;
+and predicate = Identifier of string | Predicate of string * (term list);;
 
 		(* predicates can either be separated by comma or by semi-colon *)
 type clause = Fact of predicate | Rule of predicate * (predicate list * string list);;
@@ -90,14 +91,16 @@ and string_of_term term=
 	(CompoundTerm(f,tl)) -> ( if ((isInfix f) && (List.length tl) = 2) then (string_of_term (List.hd tl) ^ f ^ string_of_term (List.nth tl 1)) else (
 		f ^ "(" ^ (stringOfTermList tl) ^ ")"  ) ) 
 	 |
-	(ListTerm tl) -> ("[" ^ (stringOfTermList tl) ^ "]");;
+	(ListTerm tl) -> ("[" ^ (stringOfTermList tl) ^ "]") |
+	
+    PredAsTerm pred -> (string_of_predicate pred)
 
-let rec string_of_subst subst = match subst with
+and string_of_subst subst = match subst with
 				[] -> "" |
 				(v,t)::tail -> (v ^ "=" ^ (string_of_term t)) ^ 
-				 ".\n" ^ (string_of_subst tail) ;;
+				 ".\n" ^ (string_of_subst tail)
 
-let string_of_predicate pred=match pred with
+and string_of_predicate pred=match pred with
 				Identifier(id) -> id |
 				Predicate(f,tl) -> (f ^ "(" ^
 				(stringOfTermList tl) ^ ")" ) ;;
@@ -154,7 +157,10 @@ let rec freeVarsInTerm term =
 				toSingleStrArr (List.map (freeVarsInTerm) tl) ) |
 
 			ListTerm(tl) -> (
-				toSingleStrArr (List.map (freeVarsInTerm) tl)) and
+				toSingleStrArr (List.map (freeVarsInTerm) tl)) |
+			
+			PredAsTerm (pred) -> (freeVarsInPredicate pred) 
+and
 
 toSingleStrArr listList = 
 	match listList with 
@@ -165,20 +171,20 @@ toSingleStrArr listList =
 		str::tail -> (str::(toSingleStrArr [tail])) ) |
 
 	fstList::tailListList -> (
-		fstList @ (toSingleStrArr (tailListList))		    	);;
+		fstList @ (toSingleStrArr (tailListList)))
 
-
+and
 
 (*Get free vars in other structures*)
-let rec rmXInList x lst = match lst with []->[] |
+rmXInList x lst = match lst with []->[] |
 				h::t->if h=x then rmXInList x t
-					else h::(rmXInList x t);;
+					else h::(rmXInList x t)
 
-let rec rmDup lst = match lst with []->[] |
-			h::t-> h::(rmDup (rmXInList h t));;
+and rmDup lst = match lst with []->[] |
+			h::t-> h::(rmDup (rmXInList h t))
 
 
-let freeVarsInPredicate pred = 
+and freeVarsInPredicate pred = 
 	match pred with
 	Identifier id -> ([]) |
 	Predicate (f,tl) -> (toSingleStrArr (List.map (freeVarsInTerm) tl)) ;;
