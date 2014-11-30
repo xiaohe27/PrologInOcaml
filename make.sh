@@ -12,7 +12,7 @@ ocamlc -c evaluator.ml
 ocamlc -c interpreter.ml
 
 ocamlc -c glue.ml
-ocamlc -c main.ml
 
 sh genExecutable.sh play
 sh genExecutable.sh readFile
+sh genExecutable.sh debugger

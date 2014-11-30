@@ -12,4 +12,4 @@ let file= Sys.argv.(1);;
 let lexbuf = Lexing.from_channel (open_in file) ;;
 let pgm= Parser.program Lexer.token lexbuf ;;
 
-let result= execProgram pgm in printResult result;;
+let result= Glue.refineResult (execProgram pgm) pgm in printResult result;;

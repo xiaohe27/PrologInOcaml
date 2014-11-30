@@ -28,8 +28,26 @@ let debugProgram pgm =  match pgm with
 
 (* print result *)
 let printResult result = match result with
-                          (b,sigma) -> (print_string ("\n"^ (string_of_bool b) ^ ".\n" ^ (ProjCommon.string_of_subst sigma) ^ "\n");) ;;
+                          (b,sigma) -> (			   			    
+			    print_string ("\n"^ (string_of_bool b) ^ ".\n" ^ (ProjCommon.string_of_subst sigma) ^ "\n");) ;;
+
+
+(*refine the result so that only the assignment to the free vars in the query get printed*)
+let refineResult result pgm = let outputSig=( match pgm with
+						   Prog(_,query) -> 
+						     (let freeVarsInQ= ProjCommon.freeVarsInQuery query in
+						      Interpreter.filter freeVarsInQ (snd result) ) |
+
+						   ProgFromQuery(query) -> 
+						     (let freeVarsInQ= ProjCommon.freeVarsInQuery query in
+						      Interpreter.filter freeVarsInQ (snd result) )) in 
+
+                              (fst result, outputSig);;
 
 (* A user-friendly way of simulating prolog program: pretty print the result. *)
-let simulateProgram pgmStr = let pgm = parseProgram pgmStr in
-                                   let result= execProgram pgm in printResult result;;
+let simulateProgram pgmStr =
+                                   let pgm = parseProgram pgmStr in
+                                   let result= execProgram pgm in				  
+
+				   let updatedResult= refineResult result pgm in 
+				   printResult updatedResult;;
