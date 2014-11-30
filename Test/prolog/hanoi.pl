@@ -1,7 +1,7 @@
  move(1,X,Y,_) :-  
-         write("Move top disk from"), 
+         write('Move top disk from '), 
          write(X), 
-         write(" to "), 
+         write(' to '), 
          write(Y), 
          nl. 
 move(N,X,Y,Z) :- 

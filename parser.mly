@@ -113,6 +113,7 @@ list_term:
 term:
 | list_term					{ $1 }
 | compound_term				{ $1 }
+| predicate					{ PredAsTerm $1 }
 
 term_list:
 | term						{ [$1] }
@@ -122,7 +123,7 @@ term_list:
 predicate:
 | NAME LPAREN term_list RPAREN    	{ Predicate ($1,$3) }
 | NAME								{ Identifier $1 }
-
+| NOT LPAREN term RPAREN		{ Predicate ("not",[$3]) }
   |compound_term_600 ARITH_EQ compound_term_600				{ Predicate ("=:=",[$1;$3])}
   |compound_term_600 ARITH_INEQ compound_term_600 			{ Predicate ("=\\=",[$1;$3])}
   |compound_term_600 ARITH_GEQ compound_term_600 			{ Predicate (">=",[$1;$3])} 
