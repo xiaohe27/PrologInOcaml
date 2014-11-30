@@ -101,8 +101,8 @@ let _= ( if debug then (
 print_string ("\nAfter applying the subst function gen from unification, new body is :\n"
 	     ^ (ProjCommon.stringOfPredList newBody connList) ^"\n" );) else ()) in
 
-													 match (consult (RuleList(usedRules @ (clause::tail)))
-														  (Query (newBody, ","::connList)) true avoidList ) with
+													 match (consult_debug (RuleList(usedRules @ (clause::tail)))
+														  (Query (newBody, ","::connList)) true avoidList debug ) with
 													   (false,_) -> (false,[]) |
 													   (true, tailSig) -> (match (Unify.composeSubst tailSig sig0) with
 															       None -> (true, []) |
@@ -111,51 +111,63 @@ print_string ("\nAfter applying the subst function gen from unification, new bod
      (*Consult a list of predicates*)
      (*returns a result which is of the form bool * subst*)
      (*predicates are left-assoc! But it needs to eval from left to right!*)
-and consult rules query lastBool avlist  =
+and consult_debug rules query lastBool avlist debug  =
     match query with Query(predList, connList) -> (
    
     match predList with 
 	 [] -> (raise (Failure "rule's body is empty!")) |
 
-	 [singlePred] -> (let (singleBool, singleSig) =(eval_predicate rules singlePred avlist) in
+	 [singlePred] -> (let (singleBool, singleSig) =(eval_predicate_debug rules singlePred avlist debug) in
 			  match connList with 
 			  ","::connTail -> ((singleBool && lastBool), singleSig) |
 			  ";"::connTail -> ((singleBool || lastBool), singleSig) |
 			  _ -> (raise (Failure "Not enough connectives or unknown connective."))) |
 
-         fstPred::tailPredList -> (let (fstBool, fstSig) = (eval_predicate rules fstPred avlist) in
+         fstPred::tailPredList -> (let (fstBool, fstSig) = (eval_predicate_debug rules fstPred avlist debug) in
 	                                (*we should only add things to the subst list when absolutely needed*)
 	                                let freeVarsInFstPred= ProjCommon.freeVarsInPredicate fstPred in
 					let refinedSig= filter freeVarsInFstPred fstSig in
 
 	                                let newTailPredList= List.map (substInPredicate refinedSig) tailPredList in
 
+let _= (if debug then (
+
 					print_string ((stringOfPredList predList (connList)) ^ " is the old pred list\n");
 					print_string ("after eval first predicate, subst derived is "^(string_of_subst fstSig) ^ "\n");
 					print_string ((stringOfPredList newTailPredList (List.tl connList)) ^ " is the updated tail pred list\n");
+) else ()
+) in
 
 	                                let newLastBool= (match connList with
 					  ","::_ -> (fstBool && lastBool) |
 					  ";"::_ -> (fstBool || lastBool) |
 					  _ -> (raise (Failure "unknown connective."))) in
-					(consult rules (Query(newTailPredList, List.tl connList)) newLastBool avlist)
+					(consult_debug rules (Query(newTailPredList, List.tl connList)) newLastBool avlist debug)
                                          ) )
 
 
 
 (*Consult a predicate which is either user-defined or built-in function*)
-and eval_predicate rules predicate avlist = match predicate with 
-                                   Identifier fact -> ( match fact with
+and eval_predicate_debug rules predicate avlist debug = match predicate with 
+                                   Identifier fact -> (
+
+let _=(if debug then (
+print_string ((fact)^" is a fact!");
+) else ()) in
+
+				                         match fact with
 				                         "true" -> (true,[]) |
 							 "false" -> (false,[]) |
-							 "nl" -> (Evaluator.nlOpApply,[]) |
-							 _ -> consultSinglePred (rules,[]) predicate avlist ) |
+							 "nl" -> (Evaluator.nlOpApply (),[]) |
+							 _ -> consultSinglePred_debug (rules,[]) predicate avlist debug) |
 						                  
 
 				   Predicate (f, tl) -> (if (Evaluator.isBuiltInOp f)   (*It is built in operation*)
 				                          				       
-				                          then ( print_string (f ^ " is a built-in op.\n"); 
-							   
+				                          then (
+let _=( if debug then (
+ print_string (f ^ " is a built-in op.\n"); 
+) else () ) in							   
 				                            if (List.length tl) == 1 then (
 							    let singleTerm = (List.hd tl) in
 
@@ -184,16 +196,25 @@ and eval_predicate rules predicate avlist = match predicate with
 									     
 									     match lhs with 
 									      ConstTerm _ -> (
+
+let _=( if debug then (
 										print_string ("\nlhs is "^ (string_of_term lhs)
 											      ^ " and it is constant,  eq op be applied on "
 											      ^ (string_of_term lhs) ^" and "^ (string_of_term rhs) ^ "\n" );
+
+) else () ) in
+
 
 										match(Evaluator.binOpApply "=:=" (Evaluator.eval_term lhs,rhsVal)) with
 									                      BoolVal false -> (false,[]) |
 											      BoolVal true -> (true,[]) |
 											      _ -> (raise (Failure "should ret BoolVal")) ) |
 									      Var x -> 
-										print_string ("\nlhs is "^(string_of_term lhs) ^", and it is a var\n");
+
+let _=( if debug then (
+		    print_string ("\nlhs is "^(string_of_term lhs) ^", and it is a var\n");
+) else () ) in
+
 										(true, [(x,Evaluator.val2Term rhsVal)]) |
 									      _ -> (false, [])) |
 
@@ -204,10 +225,18 @@ and eval_predicate rules predicate avlist = match predicate with
 
 									   else (raise (Failure "predicate should return boolean!")) ) )) )  )    
 
-				                          else  ( print_string ((ProjCommon.string_of_predicate predicate)^" is user-defined!\n");
-								  consultSinglePred (rules,[]) predicate avlist) )  (* User defined functions *)
+				                          else  ( 
+let _=( if debug then (
+print_string ((ProjCommon.string_of_predicate predicate)^" is user-defined!\n");
+) else () ) in
+
+								  consultSinglePred_debug (rules,[]) predicate avlist debug) )  (* User defined functions *)
 
 
-and consultSinglePred (rules,unusedRules) predicate avlist = consultSinglePred_debug (rules,unusedRules) predicate avlist true;;
+and consultSinglePred (rules,unusedRules) predicate avlist = consultSinglePred_debug (rules,unusedRules) predicate avlist false
+
+and eval_predicate rules predicate avlist = eval_predicate_debug rules predicate avlist false
+
+and consult rules query lastBool avlist = consult_debug rules query lastBool avlist false;;
 
 
