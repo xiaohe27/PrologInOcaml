@@ -4,7 +4,7 @@ open Parser
 open Unify
 open Evaluator
 open Interpreter
-open Glue
+open Glue;;
 
 let pgm1 = "cat(tom). ?-cat(X).";;
 let pgm2 = "cat(tom). animal(X):- cat(X). ?-animal(X).";;

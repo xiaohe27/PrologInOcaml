@@ -13,7 +13,8 @@ sh make.sh
 
 #Run 
 ##Test parser
-1. ocaml (enter ocaml command window)
+Option 1: using ocaml's interactive terminal:
+ocaml (enter ocaml command window)
 #load "projCommon.cmo";;
 #load "lexer.cmo";;
 #load "parser.cmo";;
@@ -23,6 +24,9 @@ sh make.sh
 
 #use "glue.ml";;
 
+Option 2 (Generate executable): 
+ocamlc -o [YourOcamlProgram.exe] projCommon.cmo lexer.cmo parser.cmo
+unify.cmo evaluator.cmo interpreter.cmo glue.cmo <YourOcamlProgram.ml>
 
 #Test
 GOTO Test/ReadMe.txt for more info.
