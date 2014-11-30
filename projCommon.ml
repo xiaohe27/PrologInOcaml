@@ -12,7 +12,8 @@ type term = Var of string | ConstTerm of const |
 	    PredAsTerm of predicate
 
 
-and predicate = Identifier of string | Predicate of string * (term list);;
+and predicate = Identifier of string | Predicate of string * (term list)
+		| VarAsPred of string ;;
 
 		(* predicates can either be separated by comma or by semi-colon *)
 type clause = Fact of predicate | Rule of predicate * (predicate list * string list);;
