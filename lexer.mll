@@ -76,7 +76,8 @@ rule token = parse
  |"%"[^'\n']* 		{ token lexbuf }
   | open_comment		{ comment 1 lexbuf }
   | close_comment 		{ raise (Failure "unmatched closed comment") }
-  | '"'     			 { read_string (Buffer.create 17) lexbuf }
+| '"' {stringToken "" lexbuf}
+| "'" {singleStringToken "'" lexbuf}
 | name as id			{ NAME (id) }
 | int      { INT (int_of_string (Lexing.lexeme lexbuf)) }
 | float    { FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
@@ -88,22 +89,67 @@ open_comment	{ comment (depth+1) lexbuf }
 | eof		{ raise (Failure "unmatched open comment") }
 | _		{ comment depth lexbuf }
 
-and read_string buf =
-  parse
-  | '"'       { STRING (Buffer.contents buf) }
-  | '\\' '/'  { Buffer.add_char buf '/'; read_string buf lexbuf }
-  | '\\' '\\' { Buffer.add_char buf '\\'; read_string buf lexbuf }
-  | '\\' 'b'  { Buffer.add_char buf '\b'; read_string buf lexbuf }
-  | '\\' 'f'  { Buffer.add_char buf '\012'; read_string buf lexbuf }
-  | '\\' 'n'  { Buffer.add_char buf '\n'; read_string buf lexbuf }
-  | '\\' 'r'  { Buffer.add_char buf '\r'; read_string buf lexbuf }
-  | '\\' 't'  { Buffer.add_char buf '\t'; read_string buf lexbuf }
-  | [^ '"' '\\']+
-    { Buffer.add_string buf (Lexing.lexeme lexbuf);
-      read_string buf lexbuf
-    }
-  | _ { raise (Failure "Illegal string character" ) }
-  | eof { raise (Failure "unmatched open quote") }
+and stringToken content = parse
+  | eof {raise (Failure "unexpected end of file")}
+
+  | '"' {STRING content}
+
+  | "\\\\" {let newContent= content ^ "\\" in stringToken newContent lexbuf}
+
+  | "\\'" {let newContent= content ^ "'" in stringToken newContent lexbuf}
+
+  | "\\\"" {let newContent= content ^ "\"" in stringToken newContent lexbuf}
+
+  | "\\t" {let newContent= content ^ "\t" in stringToken newContent lexbuf}
+
+  | ("\\n")[' ' '\t']* {let newContent= content ^ "\n " in stringToken newContent lexbuf}
+
+  | "\\r" {let newContent= content ^ "\r" in stringToken newContent lexbuf}
+
+  | "\\b" {let newContent= content ^ "\b" in stringToken newContent lexbuf}
+
+  | "\\ " {let newContent= content ^ "\ " in stringToken newContent lexbuf}
+
+  | "\\" (digit as x) (digit as y) (digit as z) {let n= 
+		let x=String.make 1 x in let y=String.make 1 y in let z=String.make 1 z in
+		 (int_of_string z) + 10*(int_of_string y)
+		 + 100*(int_of_string x) in if n > 255 then 
+				raise (Failure "unknown char") else
+	   let newContent= content ^ (String.make 1 (char_of_int n))
+	       in stringToken newContent lexbuf } 
+	       
+| [^'"']+ as pstr {let newContent= content ^ pstr in stringToken newContent lexbuf}
+
+and singleStringToken content = parse
+  | eof {raise (Failure "unexpected end of file")}
+
+  | "'" {STRING (content ^ "'") }
+
+  | "\\\\" {let newContent= content ^ "\\" in singleStringToken newContent lexbuf}
+
+  | "\\'" {let newContent= content ^ "'" in singleStringToken newContent lexbuf}
+
+  | "\\\"" {let newContent= content ^ "\"" in singleStringToken newContent lexbuf}
+
+  | "\\t" {let newContent= content ^ "\t" in singleStringToken newContent lexbuf}
+
+  | ("\\n")[' ' '\t']* {let newContent= content ^ "\n " in singleStringToken newContent lexbuf}
+
+  | "\\r" {let newContent= content ^ "\r" in singleStringToken newContent lexbuf}
+
+  | "\\b" {let newContent= content ^ "\b" in singleStringToken newContent lexbuf}
+
+  | "\\ " {let newContent= content ^ "\ " in singleStringToken newContent lexbuf}
+
+  | "\\" (digit as x) (digit as y) (digit as z) {let n= 
+		let x=String.make 1 x in let y=String.make 1 y in let z=String.make 1 z in
+		 (int_of_string z) + 10*(int_of_string y)
+		 + 100*(int_of_string x) in if n > 255 then 
+				raise (Failure "unknown char") else
+	   let newContent= content ^ (String.make 1 (char_of_int n))
+	       in singleStringToken newContent lexbuf } 
+	       
+ | [^''']+ as pstr {let newContent= content ^ pstr in singleStringToken newContent lexbuf}
 
 
 {(* do not modify this function: *)
