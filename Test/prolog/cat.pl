@@ -1,1 +1,2 @@
 cat(tom) .
+?-cat(X).
