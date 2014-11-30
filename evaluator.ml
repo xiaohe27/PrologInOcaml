@@ -279,6 +279,8 @@ let rec eval_term term = match term with
 
 			|       ListTerm(tl) -> (ListVal (List.map (eval_term) tl))
 
+			|       PredAsTerm _ -> (raise (Failure "should not evaluate a predicate term here!"))
+
 		;;
 
 

@@ -12,10 +12,11 @@ let rec term_lift_subst subst term = match term with
                                        Var v -> (subst_fun subst v) 
                             |          ConstTerm c -> (term) 
 			    |          CompoundTerm(f,tl) -> CompoundTerm(f, List.map (term_lift_subst subst) tl)
-			    |          ListTerm(tl) -> ListTerm(List.map (term_lift_subst subst) tl);;
+			    |          ListTerm(tl) -> ListTerm(List.map (term_lift_subst subst) tl) 
+			    | (PredAsTerm pred) -> (PredAsTerm (substInPredicate subst pred)) 
 
 
-let rec substInPredicate subst predicate = match predicate with 
+and substInPredicate subst predicate = match predicate with 
 						Identifier _ -> predicate |
 						Predicate(f,tl) -> Predicate(f, List.map (term_lift_subst subst) tl);;
  
@@ -25,7 +26,11 @@ let rec occurs x term = match term with
 			Var y -> (x = y) |
 			ConstTerm c -> false |
 			CompoundTerm(f,tl) -> occursInList x tl |
-			ListTerm(tl) -> occursInList x tl
+			ListTerm(tl) -> occursInList x tl  |
+			PredAsTerm pred -> 
+				(match pred with
+				 Identifier _ -> false |
+				 Predicate(f,tl) -> occursInList x tl)
  
 			and occursInList x termList = match termList with
 				[] -> false |
