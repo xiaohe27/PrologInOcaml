@@ -21,6 +21,10 @@ let execProgram pgm = match pgm with
                         Prog(rules,query) -> (Interpreter.consult rules (addAComma query) true []) |
 			ProgFromQuery(query) -> (Interpreter.consult (RuleList([])) (addAComma query) true []);; 
 
+let debugProgram pgm =  match pgm with 
+                        Prog(rules,query) -> (Interpreter.consult_debug rules (addAComma query) true [] true) |
+			ProgFromQuery(query) -> (Interpreter.consult_debug (RuleList([])) (addAComma query) true [] true);; 
+
 
 (* print result *)
 let printResult result = match result with

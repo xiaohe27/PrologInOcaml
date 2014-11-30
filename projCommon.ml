@@ -67,7 +67,7 @@ let string_of_const c =
     with IntConst n    -> string_of_int n
        | BoolConst b   -> if b then "true" else "false"
        | FloatConst f  -> string_of_float f
-       | StringConst s -> "\"" ^ s ^ "\"";;
+       | StringConst s -> s;;
       
 
 let isInfix op = match op with
