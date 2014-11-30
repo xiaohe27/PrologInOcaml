@@ -18,8 +18,8 @@ let addAComma q = match q with
                       Query (pl,connList) -> (Query (pl, (","::connList)) );;
 
 let execProgram pgm = match pgm with 
-                        Prog(rules,query) -> (Interpreter.consult rules (addAComma query) true ) |
-			ProgFromQuery(query) -> (Interpreter.consult (RuleList([])) (addAComma query) true );; 
+                        Prog(rules,query) -> (Interpreter.consult rules (addAComma query) true []) |
+			ProgFromQuery(query) -> (Interpreter.consult (RuleList([])) (addAComma query) true []);; 
 
 
 (* print result *)

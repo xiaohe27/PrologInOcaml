@@ -2,6 +2,17 @@ open ProjCommon
 open Evaluator
 open Unify
 
+let rec filter preserveList subst = match subst with
+                                [] -> [] |
+				(v,term)::tail -> (
+				  if occursInList v preserveList then 
+				   ((v,term)::(filter preserveList tail))
+				  else (filter preserveList tail) )
+and occursInList item list = match list with
+                               [] -> false |
+                               h::tail -> if item = h then true else
+                                           occursInList item tail;;
+
 let rec rmLastItem list = match list with [] -> [] |
                                           [h] -> [] |
 					  h::t -> h::(rmLastItem t);;
@@ -53,7 +64,7 @@ and getVarStrList termList =
 
 (* consult the predicate in user-defined rules *)
 
-let rec consultSinglePred_debug (rules, usedRules) predicate debug = match rules with 
+let rec consultSinglePred_debug (rules, usedRules) predicate avlist  debug = match rules with 
                                           RuleList ([]) -> (false, []) |
                                           RuleList (clause::tail) -> (match clause with 
 								     Fact fp -> (
@@ -62,7 +73,7 @@ let rec consultSinglePred_debug (rules, usedRules) predicate debug = match rules
 								       print_string ((string_of_predicate predicate) ^ " is trying to match fact "
 										    ^ (string_of_predicate fp) ^ "\n");) else ()) in
 								       match(Unify.unifyPredicates (fp,predicate) ) with 
-										None -> (consultSinglePred_debug (RuleList tail, (usedRules @ [clause])) predicate debug ) |
+										None -> (consultSinglePred_debug (RuleList tail, (usedRules @ [clause])) predicate avlist debug ) |
 										Some sig0 -> (true, sig0) ) |
 
 								     Rule (headPred, (body,connList)) -> (
@@ -71,13 +82,14 @@ let rec consultSinglePred_debug (rules, usedRules) predicate debug = match rules
 										    ^ (string_of_clause (clause)) ^ "\n");) else ()) in
 
 								       match (Unify.unifyPredicates (headPred, predicate)) with
-											       None -> (consultSinglePred_debug (RuleList tail, (usedRules @ [clause]))  predicate debug) |
+											       None -> (consultSinglePred_debug (RuleList tail, (usedRules @ [clause]))
+													  predicate avlist debug) |
 											       Some sig0 -> (
 
 let _= ( if debug then
 (print_string ("\n after unifying head and query, the following subst function is gen:\n" ^
 	     (ProjCommon.string_of_subst sig0)^"\n");) else ()) in
-                                                                                                 let avoidList= getAVList sig0 in
+                                                                                                 let avoidList= getAVList sig0 @ avlist in
 												 let renamedBody= renameFreeVarsInClause avoidList clause in
 
 let _= ( if debug then (
@@ -90,7 +102,7 @@ print_string ("\nAfter applying the subst function gen from unification, new bod
 	     ^ (ProjCommon.stringOfPredList newBody connList) ^"\n" );) else ()) in
 
 													 match (consult (RuleList(usedRules @ (clause::tail)))
-														  (Query (newBody, ","::connList)) true ) with
+														  (Query (newBody, ","::connList)) true avoidList ) with
 													   (false,_) -> (false,[]) |
 													   (true, tailSig) -> (match (Unify.composeSubst tailSig sig0) with
 															       None -> (true, []) |
@@ -99,37 +111,44 @@ print_string ("\nAfter applying the subst function gen from unification, new bod
      (*Consult a list of predicates*)
      (*returns a result which is of the form bool * subst*)
      (*predicates are left-assoc! But it needs to eval from left to right!*)
-and consult rules query lastBool =
+and consult rules query lastBool avlist  =
     match query with Query(predList, connList) -> (
    
     match predList with 
 	 [] -> (raise (Failure "rule's body is empty!")) |
 
-	 [singlePred] -> (let (singleBool, singleSig) =(eval_predicate rules singlePred) in
+	 [singlePred] -> (let (singleBool, singleSig) =(eval_predicate rules singlePred avlist) in
 			  match connList with 
 			  ","::connTail -> ((singleBool && lastBool), singleSig) |
 			  ";"::connTail -> ((singleBool || lastBool), singleSig) |
 			  _ -> (raise (Failure "Not enough connectives or unknown connective."))) |
 
-         fstPred::tailPredList -> (let (fstBool, fstSig) = (eval_predicate rules fstPred) in
-	                                let newTailPredList= List.map (substInPredicate fstSig) tailPredList in
-					print_string ((stringOfPredList newTailPredList (List.tl connList)) ^ " is the updated pred list\n");
+         fstPred::tailPredList -> (let (fstBool, fstSig) = (eval_predicate rules fstPred avlist) in
+	                                (*we should only add things to the subst list when absolutely needed*)
+	                                let freeVarsInFstPred= ProjCommon.freeVarsInPredicate fstPred in
+					let refinedSig= filter freeVarsInFstPred fstSig in
+
+	                                let newTailPredList= List.map (substInPredicate refinedSig) tailPredList in
+
+					print_string ((stringOfPredList predList (connList)) ^ " is the old pred list\n");
+					print_string ("after eval first predicate, subst derived is "^(string_of_subst fstSig) ^ "\n");
+					print_string ((stringOfPredList newTailPredList (List.tl connList)) ^ " is the updated tail pred list\n");
 
 	                                let newLastBool= (match connList with
 					  ","::_ -> (fstBool && lastBool) |
 					  ";"::_ -> (fstBool || lastBool) |
 					  _ -> (raise (Failure "unknown connective."))) in
-					(consult rules (Query(newTailPredList, List.tl connList)) newLastBool)
+					(consult rules (Query(newTailPredList, List.tl connList)) newLastBool avlist)
                                          ) )
 
 
 
 (*Consult a predicate which is either user-defined or built-in function*)
-and eval_predicate rules predicate = match predicate with 
+and eval_predicate rules predicate avlist = match predicate with 
                                    Identifier fact -> ( match fact with
 				                         "true" -> (true,[]) |
 							 "false" -> (false,[]) |
-							 _ -> consultSinglePred (rules,[]) predicate ) |
+							 _ -> consultSinglePred (rules,[]) predicate avlist ) |
 						                  
 
 				   Predicate (f, tl) -> (if (Evaluator.isBuiltInOp f)   (*It is built in operation*)
@@ -183,9 +202,9 @@ and eval_predicate rules predicate = match predicate with
 									   else (raise (Failure "predicate should return boolean!")) ) )) )  )    
 
 				                          else  ( print_string ((ProjCommon.string_of_predicate predicate)^" is user-defined!\n");
-								  consultSinglePred (rules,[]) predicate) )  (* User defined functions *)
+								  consultSinglePred (rules,[]) predicate avlist) )  (* User defined functions *)
 
 
-and consultSinglePred (rules,unusedRules) predicate = consultSinglePred_debug (rules,unusedRules) predicate true;;
+and consultSinglePred (rules,unusedRules) predicate avlist = consultSinglePred_debug (rules,unusedRules) predicate avlist true;;
 
 
