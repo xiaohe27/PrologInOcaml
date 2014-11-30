@@ -148,19 +148,22 @@ and eval_predicate rules predicate avlist = match predicate with
                                    Identifier fact -> ( match fact with
 				                         "true" -> (true,[]) |
 							 "false" -> (false,[]) |
+							 "nl" -> (Evaluator.nlOpApply,[]) |
 							 _ -> consultSinglePred (rules,[]) predicate avlist ) |
 						                  
 
 				   Predicate (f, tl) -> (if (Evaluator.isBuiltInOp f)   (*It is built in operation*)
 				                          				       
 				                          then ( print_string (f ^ " is a built-in op.\n"); 
+							   
 				                            if (List.length tl) == 1 then (
 							    let singleTerm = (List.hd tl) in
 
 							    if (Evaluator.isTypeTesting f) then  (*it is type testing*)
 							         (Evaluator.typeTest f singleTerm, [])
 							    
-							    else (if f == "not" then (getBool (Evaluator.monOpApply f (Evaluator.eval_term singleTerm)), [])
+							    else (if f = "not" then (getBool (Evaluator.monOpApply f (Evaluator.eval_term singleTerm)), [])
+								  else if (f = "write") then ((Evaluator.writeOpApply singleTerm),[])
 								  else (raise (Failure "cannot generate goal from this unary op.")) )
 											      )
 

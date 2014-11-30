@@ -1,2 +1,2 @@
 cat(tom) .
-?-cat(X).
+dog(_) :- true.

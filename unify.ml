@@ -151,8 +151,11 @@ let rec unify eqlst = match eqlst with
 					   ) )
 
 
-|	(Var x, _) -> (if (occurs x t) then (None)
-			else (let eqlst''= eqlist_subst ([(x,t)]) eqlst' in
+|	(Var x, _) -> (
+                        if (x = "_") then (Some [])
+                        else if (occurs x t) then (None)
+			else (
+                                let eqlst''= eqlist_subst ([(x,t)]) eqlst' in
 				let sigmaResult= unify eqlst'' in
 					match sigmaResult with 
 						None -> None |
@@ -211,7 +214,9 @@ let rec unifyHead eqlst = match eqlst with
 					 )
 
 
-|	(Var x, _) -> (if (occurs x t) then (None)
+|	(Var x, _) ->   (
+                        if (x = "_") then (Some [])
+                        else (if (occurs x t) then (None)
 			else ( match (unifyHead eqlst') with
 				None -> None |
 				Some tailResult -> if (occursInSubstList x tailResult) then
@@ -219,7 +224,7 @@ let rec unifyHead eqlst = match eqlst with
 							Var _ -> Some tailResult |
 							_ -> Some (updateListWithElement tailResult (x,t)) ) 
 						      
-						       else (Some ((x,t)::tailResult) )  ) )
+						       else (Some ((x,t)::tailResult) )  ) ))
 				
 					(*eliminate rule*)
 

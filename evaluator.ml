@@ -60,8 +60,16 @@ let retBool op = match op with
 
 (* Test whether a function is built-in function *)
 let isBuiltInOp op = if (isTypeTesting op) then true 
-                      else if (op = "=" || op = "is") then true else (retBool op);; 
+                      else if (op = "=" || op = "is" || op = "write"
+		               || op = "nl" ) then true else (retBool op);; 
 
+let nlOpApply = print_string "\n"; true;;
+
+let writeOpApply contentsTerm =
+                 match contentsTerm with
+		   ConstTerm(StringConst contents) -> (
+                 print_string (contents); true) |
+                 _ -> raise (Failure "Write is a built-in operation which takes only one string as argument!");;
 
 let rec binOpApply binop (v1,v2) = match binop with
 				"+" -> (match (v1, v2) with 
