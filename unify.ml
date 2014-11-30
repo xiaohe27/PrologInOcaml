@@ -92,6 +92,23 @@ let rec genPairList list1 list2 = if (List.length list1 != List.length list2)
 
 
 
+let getHead termList = match termList with                          
+				[] -> None |
+			        h::_ -> Some h;;
+			  
+
+let getTail tl =
+                       match tl with 
+			   [] -> (ListTerm []) |
+			   [t] -> (ListTerm []) |
+			   [_;term] -> (match term with 
+			              Var _ -> (term) |
+				      _ -> (ListTerm [term])
+				     ) |
+			   _::tail -> (ListTerm tail) ;;
+			    
+
+
 (*Unify the body part of a rule.*)
 let rec unify eqlst = match eqlst with 
 			[] -> Some [] |
@@ -114,10 +131,24 @@ let rec unify eqlst = match eqlst with
 
 ) else (None) )               (*Decompose rule*)
  
-				      | (ListTerm tl1, ListTerm tl2) -> ( let pairList= (genPairList tl1 tl2) 
-						 in (match pairList with 
-							None -> None |
-							Some newConstraints -> unify (eqlst' @ newConstraints)	))
+				      | (ListTerm tl1, ListTerm tl2) -> (
+					  if (tl1 = [] && tl2 = []) then unify eqlst'
+					  else(
+
+					 let tl1Head= getHead tl1 in
+					 let tl1Tail= getTail tl1 in
+					 let tl2Head= getHead tl2 in
+					 let tl2Tail= getTail tl2 in
+
+					 match (tl1Head, tl2Head) with
+					   (None, _) -> (None) |
+					   (_, None) -> (None) |
+					   (Some head1, Some head2) -> (
+					     let newConstraints= [(head1,head2);(tl1Tail,tl2Tail)] in
+					     unify (eqlst' @ newConstraints)
+					    )
+
+					   ) )
 
 
 |	(Var x, _) -> (if (occurs x t) then (None)
@@ -158,10 +189,26 @@ let rec unifyHead eqlst = match eqlst with
 
 ) else (None) )               (*Decompose rule*)
  
-				      | (ListTerm tl1, ListTerm tl2) -> ( let pairList= (genPairList tl1 tl2) 
-						 in (match pairList with 
-							None -> None |
-							Some newConstraints -> unifyHead (eqlst' @ newConstraints)	))
+				      | (ListTerm tl1, ListTerm tl2) -> ( 
+					  if (tl1 = [] && tl2 = []) then unify eqlst'
+					  else(
+
+					 let tl1Head= getHead tl1 in
+					 let tl1Tail= getTail tl1 in
+					 let tl2Head= getHead tl2 in
+					 let tl2Tail= getTail tl2 in
+
+					 match (tl1Head, tl2Head) with
+					   (None, _) -> (None) |
+					   (_, None) -> (None) |
+					   (Some head1, Some head2) -> (
+					     let newConstraints= [(head1,head2);(tl1Tail,tl2Tail)] in
+					     unify (eqlst' @ newConstraints)
+					    )
+
+					   )
+					 
+					 )
 
 
 |	(Var x, _) -> (if (occurs x t) then (None)

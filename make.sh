@@ -13,4 +13,6 @@ ocamlc -c interpreter.ml
 
 ocamlc -c glue.ml
 ocamlc -c main.ml
-#ocamlc -o Parser_EXE projCommon.cmo lexer.cmo parser.cmo
+
+sh genExecutable.sh play
+sh genExecutable.sh readFile
