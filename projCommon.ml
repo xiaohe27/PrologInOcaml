@@ -22,7 +22,6 @@ type rules = RuleList of clause list;;
 
 type program = Prog of rules * query | ProgFromQuery of query;;
 
-
 (* ================= Interpreting ================= *)
 (* Values *)
 type value =
@@ -112,6 +111,11 @@ let string_of_clause clause = match clause with
 				Fact fp -> ("Fact "^(string_of_predicate fp) ^ "\t") |
 				Rule (hp,(body,connList)) -> ("Rule: "^(string_of_predicate hp) ^ " :- " ^ (stringOfPredList body connList));;
 
+let rec stringOfRuleList rules = match rules with
+	RuleList clst -> (match clst with 
+		[] -> "" |
+		h::t -> "Rule:\t"^(string_of_clause h)^"\n"^
+			(stringOfRuleList (RuleList t)));;
 
 (* Fresh Name stuff *)
 

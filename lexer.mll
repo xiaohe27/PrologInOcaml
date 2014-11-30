@@ -1,6 +1,8 @@
 {
 open ProjCommon;;
 open Parser;;
+
+exception EndInput;;
 }
 
 (* definitions section *)

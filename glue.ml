@@ -7,8 +7,6 @@ open Interpreter
 
 (* Lexing.from_channel stdin *)
 
-(* Entry main *)
-
 (*Given a prolog string, return a rule list*)
 let parseRules s = Parser.rules Lexer.token (Lexing.from_string s);;
 
