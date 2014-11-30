@@ -1,0 +1,22 @@
+size([],0).
+size([H|T],N) :- size(T,N1), N is N1+1.
+
+?- size([1,2,3,4],N).
+
+
+- : ProjCommon.program =
+Prog
+ (RuleList
+   [Fact (Predicate ("size", [ListTerm []; ConstTerm (IntConst 0)]));
+    Rule (Predicate ("size", [ListTerm [Var "H"; Var "T"]; Var "N"]),
+     ([Predicate ("size", [Var "T"; Var "N1"]);
+       Predicate ("is",
+        [Var "N"; CompoundTerm ("+", [Var "N1"; ConstTerm (IntConst 1)])])],
+      [","]))],
+ Query
+  ([Predicate ("size",
+     [ListTerm
+       [ConstTerm (IntConst 1); ConstTerm (IntConst 2);
+        ConstTerm (IntConst 3); ConstTerm (IntConst 4)];
+      Var "N"])],
+   []))
