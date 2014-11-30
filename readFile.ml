@@ -10,6 +10,26 @@ open Glue
 let file= Sys.argv.(1);;
 
 let lexbuf = Lexing.from_channel (open_in file) ;;
-let pgm= Parser.program Lexer.token lexbuf ;;
 
-let result= Glue.refineResult (execProgram pgm) pgm in printResult result;;
+let rec loop rules = 
+
+try (
+  let parsedPgm= Parser.program Lexer.token lexbuf in
+	let RuleList(existingRules)= rules in
+	let newPgm=(match parsedPgm with 
+	Prog(RuleList(curRules), query) -> 
+	(Prog(RuleList(curRules @ existingRules),query)) |
+	
+	ProgFromQuery(query) -> (Prog(rules,query))  ) in
+
+	let result= Glue.refineResult (Glue.execProgram newPgm) newPgm in 
+	let _=	printResult result in
+	match newPgm with 
+	Prog(newRules, _) -> (loop newRules) |
+	_ -> (loop rules)
+)
+
+with Lexer.EndInput -> (exit 0) 
+	| _ -> (exit 1)
+
+in loop (RuleList [])

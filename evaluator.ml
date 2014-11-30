@@ -68,7 +68,7 @@ let nlOpApply () = print_newline (); true;;
 let writeOpApply contentsTerm =
                  match contentsTerm with
 		   ConstTerm(StringConst contents) -> (
-                 print_string (contents ^ " "); true) |
+                 print_string (contents); true) |
                  _ -> raise (Failure "Write is a built-in operation which takes only one string as argument!");;
 
 let rec binOpApply binop (v1,v2) = match binop with
