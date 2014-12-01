@@ -65,6 +65,9 @@ type result = bool * subst ;;
 (*indexed rules*)
 type indexedRules = (int * clause) list;;
 
+(*backtrack result*)
+type enhancedResult = result * (int list);;
+
 
 (*print term*)
 let string_of_const c =
