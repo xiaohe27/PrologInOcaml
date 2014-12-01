@@ -62,6 +62,9 @@ type subst = (string * term) list;;
 (* result *)
 type result = bool * subst ;;
 
+(*indexed rules*)
+type indexedRules = (int * clause) list;;
+
 
 (*print term*)
 let string_of_const c =
@@ -118,8 +121,16 @@ let string_of_clause clause = match clause with
 let rec stringOfRuleList rules = match rules with
 	RuleList clst -> (match clst with 
 		[] -> "" |
-		h::t -> "Rule:\t"^(string_of_clause h)^"\n"^
+		h::t -> (string_of_clause h)^"\n"^
 			(stringOfRuleList (RuleList t)));;
+
+let rec stringOfIndexedRules indexRules =
+	match indexRules with
+	[] -> "" |
+	(i,clause)::tail -> ("Rule " ^ (string_of_int i) ^ ":"
+				^ (string_of_clause clause) ^
+				("\n" ^ stringOfIndexedRules tail)) ;;
+
 
 (* Fresh Name stuff *)
 
