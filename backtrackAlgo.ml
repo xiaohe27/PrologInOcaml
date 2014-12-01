@@ -16,11 +16,24 @@ let rec incVert path numOfRules =
 		None
 	else(
 	match path with 
-	[] -> None |
-	[i] -> (if i < numOfRules-1 then 
-		(Some [i+1]) else (None))
+	[] -> None (*empty list indicates all the paths have been searched*)  | 
 
-	i::tail -> (i::(incVert tail numOfRules)) )
+
+	i::tail -> ( let lenOfPath= List.length path in
+		     let lastItem= List.nth path (lenOfPath-1) in
+		     if lastItem < (numOfRules-1) then Some(incLastItem path)
+		     else (let shortPath= rmLastItem path in
+			   incVert shortPath numOfRules )) )
+
+and incLastItem lst = match lst with
+                     [] -> [] |
+		     [h] -> [h+1] |
+		     h::t -> h::(incLastItem t)
+
+and rmLastItem lst = match lst with
+                     [] -> [] |
+                     [h] -> [] |
+                     h::t -> h::(rmLastItem t)    ;;
 
 
 let rec incHoz path numOfRules =
