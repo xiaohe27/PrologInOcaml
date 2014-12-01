@@ -38,16 +38,19 @@
 %start program
 
 %%
-
+var:
+| VARIABLE				{ Var $1 }
+name:
+| NAME					{ ConstTerm(StringConst $1) }
 atomic_term:
-  | VARIABLE				{ Var $1 }
+  | var					{ $1 }
+  | name				{ $1 }
   | INT						{ ConstTerm(IntConst $1) }
   | MINUS INT				{ ConstTerm(IntConst (-$2)) }
   | FLOAT					{ ConstTerm(FloatConst $1) }
   | MINUS FLOAT				{ ConstTerm(FloatConst (-.$2)) }
   | STRING					{ ConstTerm(StringConst $1) }
-  | BOOL					{ ConstTerm(BoolConst $1) }
-  | NAME					{ ConstTerm(StringConst $1) }
+  | BOOL					{ ConstTerm(BoolConst $1) } 
   | LPAREN term RPAREN  	{ $2 } 
 
 compound_term_1:
@@ -113,7 +116,14 @@ list_term:
 term:
 | list_term					{ $1 }
 | compound_term				{ $1 }
-| predicate					{ PredAsTerm $1 }
+| NAME LPAREN term_list RPAREN 	{ PredAsTerm (Predicate ($1,$3)) }
+| NOT LPAREN term RPAREN		{ PredAsTerm (Predicate ("not",[$3])) }
+/*| predicate					{ PredAsTerm $1 }*/
+
+predicate_list:
+| predicate								{ ([$1],[]) }
+| predicate COMMA predicate_list	 	{ ($1::(fst $3), ","::snd($3)) }
+| predicate SEMICOLON predicate_list	{ ($1::(fst $3), ";"::snd($3)) }
 
 term_list:
 | term						{ [$1] }
@@ -123,7 +133,9 @@ term_list:
 predicate:
 | NAME LPAREN term_list RPAREN    	{ Predicate ($1,$3) }
 | NAME								{ Identifier $1 }
-| NOT LPAREN term RPAREN		{ Predicate ("not",[$3]) }
+| VARIABLE								{ VarAsPred $1}
+| NOT LPAREN term RPAREN			{ Predicate ("not",[$3]) }
+
   |compound_term_600 ARITH_EQ compound_term_600				{ Predicate ("=:=",[$1;$3])}
   |compound_term_600 ARITH_INEQ compound_term_600 			{ Predicate ("=\\=",[$1;$3])}
   |compound_term_600 ARITH_GEQ compound_term_600 			{ Predicate (">=",[$1;$3])} 
@@ -141,11 +153,6 @@ predicate:
   |compound_term_600 TERM_ORDER_EQ compound_term_600 		{ Predicate ("=@=",[$1;$3])} 
   |compound_term_600 TERM_ORDER_INEQ compound_term_600 		{ Predicate ("\\=@=",[$1;$3])} 
   |compound_term_600 IS compound_term_600 					{ Predicate ("is",[$1;$3])} 
-  
-predicate_list:
-| predicate								{ ([$1],[]) }
-| predicate COMMA predicate_list	 	{ ($1::(fst $3), ","::snd($3)) }
-| predicate SEMICOLON predicate_list	{ ($1::(fst $3), ";"::snd($3)) }
 
 clause:
 | predicate DOT								{ Fact $1 }
