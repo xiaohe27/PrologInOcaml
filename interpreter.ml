@@ -115,7 +115,7 @@ and consult_debug rules query lastBool avlist debug  =
     match query with Query(predList, connList) -> (
    
     match predList with 
-	 [] -> (raise (Failure "rule's body is empty!")) |
+	 [] -> (raise (Failure "Query is empty!")) |
 
 	 [singlePred] -> (let (singleBool, singleSig) =(eval_predicate_debug rules singlePred avlist debug) in
 			  match connList with 
