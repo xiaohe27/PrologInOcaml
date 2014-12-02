@@ -37,8 +37,8 @@ let printIndexedRulesFromFile () =
 
 
 (*Get all the solutions for a singlePred*)
-(*Get a results list*)
-let getAllSol4Pred indexedRules pred avlist =
+(*Get a results list. Will assume conn list for combining bools of predicate list is complete*)
+let rec getAllSol4Pred indexedRules pred avlist =
   match indexedRules with
     [] -> ([Interpreter.eval_predicate (RuleList([])) pred []]) |
 
@@ -49,7 +49,7 @@ let getAllSol4Pred indexedRules pred avlist =
 		      	None -> (getAllSol4Pred remainingRuleList pred avlist) |
 		       	Some sig0 -> (true, sig0)::(getAllSol4Pred remainingRuleList pred avlist) ) |
 	 
-	 Predicate(headPred, (body,connList)) 
+	 Rule (headPred, (body,connList)) 
 		  -> (match (Unify.unifyPredicates (headPred, pred)) with
 			None -> (getAllSol4Pred remainingRuleList pred avlist)
 			 |
@@ -59,7 +59,7 @@ let getAllSol4Pred indexedRules pred avlist =
 				       let bodyQuery=(Query (newBody, ","::connList)) in
 
 				       let resList4CurRule = 
-					getResultListByApplyingSig (getAllSol indexedRules bodyQuery avlist) sig0 in
+					getResultListByApplyingSig (getAllSol indexedRules bodyQuery true avlist) sig0 in
 				       
 				       resList4CurRule @ (getAllSol4Pred remainingRuleList pred avlist)
 
@@ -83,8 +83,9 @@ match query with
 Query(predList, connList) -> 
   ( match predList with
     [] -> ((raise (Failure "Query is empty!"))) |
-    fstPred::predTailList ->     
-        (applyFirstResultToPredList fstPred predTailList connList indexedRules avlist) ) 
+    fstPred::predTailList ->  
+	 let fstPredResultList = ( getAllSol4Pred indexedRules fstPred avlist ) in   
+        (applyFirstResultToPredList fstPred fstPredResultList predTailList connList indexedRules lastBool avlist) ) 
 
 )
 
@@ -93,23 +94,28 @@ and evalPureQuery query =
    (Interpreter.consult (RuleList([])) (Glue.addAComma query) true [])
 
 
-and applyFirstResultToPredList fstPred tailPredList connList indexedRules avlist =
+and applyFirstResultToPredList fstPred fstPredResultList tailPredList connList indexedRules lastBool avlist =
  
- let fstPredResultList = ( getAllSol4Pred indexedRules fstPred avlist ) in
-
-match fstPredResultList with 
-        [] -> [] |
+ match fstPredResultList with 
+        [] -> (raise (Failure "Should return a result, either true or false")) |
         (bool1, sig1)::remainingFstResultList ->
 	  (let freeVarsInFstPred= ProjCommon.freeVarsInPredicate fstPred in
 	   let refinedSig= filter freeVarsInFstPred sig1 in
 
 	   let newTailPredList= List.map (substInPredicate refinedSig) tailPredList in
 	   let newLastBool= (match connList with
-					  ","::_ -> (fstBool && lastBool) |
-					  ";"::_ -> (fstBool || lastBool) |
-					  _ -> (raise (Failure "unknown connective."))) in
-					(consult_debug rules (Query(newTailPredList, List.tl connList)) newLastBool avlist debug)
- )
+		","::_ -> (bool1 && lastBool) |
+		";"::_ -> (bool1 || lastBool) |
+		_ -> (raise (Failure "unknown connective."))) in
+	 let allResults4FirstResult = (getAllSol indexedRules (Query(newTailPredList, List.tl connList)) newLastBool avlist)
+	 in match remainingFstResultList with
+		[] -> allResults4FirstResult | 
+		
+		_ -> (allResults4FirstResult @
+			(applyFirstResultToPredList fstPred remainingFstResultList tailPredList connList indexedRules lastBool avlist))	
+	)
+
+  
 
 ;;
 		
