@@ -35,5 +35,48 @@ let printIndexedRulesFromFile () =
 	print_string (ProjCommon.stringOfIndexedRules indexedRules) ;; 
 	
 
-let backtrack indexRules query = 
+
+(*Get all the solutions for a singlePred*)
+(*Get a results list*)
+let getAllSol4Pred indexedRules pred avlist =
+  match indexedRules with
+    [] -> ([Interpreter.eval_predicate (RuleList([])) pred []]) |
+
+    curRule::remainingRuleList -> 
+      (
+       match curRule with 
+	 Fact fp -> (match(Unify.unifyPredicates (fp,pred) ) with 
+		      	None -> (getAllSol4Pred remainingRuleList pred ) |
+		       	Some sig0 -> (true, sig0)::(getAllSol4Pred remainingRuleList pred) ) |
+	 
+	 Predicate(headPred, (body,connList)) 
+		  -> (match (Unify.unifyPredicates (headPred, pred)) with
+			None -> (getAllSol4Pred remainingRuleList pred )
+			 |
+			Some sig0 -> ( let avoidList= Interpreter.getAVList sig0 @ avlist in
+				       let renamedBody= Interpreter.renameFreeVarsInClause avoidList curRule in
+				       let newBody= List.map (Unify.substInPredicate sig0) renamedBody in
+				       let bodyQuery=(Query (newBody, ","::connList)) in
+
+				       match (getAllSol indexedRules bodyQuery avlist) with
+					 ([]) -> getAllSol4Pred reaminingRuleList pred avlist |
+					 (curResult::resList) -> 
+					   (match curResult with
+					    (false,_) -> () |
+					    (true, tailSig) -> (match (Unify.composeSubst tailSig sig0) with
+					        None -> (true, []) |
+					        Some finalSig -> (true, finalSig) )) 
+
+				       ) )
+      ) 
+
+and getAllSol indexedRules query avlist =
+
+
+and evalPureQuery query =
+   (Interpreter.consult (RuleList([])) (Glue.addAComma query) true [])
+
+and getOneSol singleRule query =
+
+  match 
 		

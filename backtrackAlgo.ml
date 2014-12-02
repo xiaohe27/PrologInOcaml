@@ -36,9 +36,13 @@ and rmLastItem lst = match lst with
                      h::t -> h::(rmLastItem t)    ;;
 
 
-let rec incHoz path numOfRules =
-	if numOfRules <=0 then raise (Failure "number of rules should be positive")
-	else path @ [0];;
+let rec isBefore curPath expectedPath =
+  match (curPath,expectedPath) with
+    ([],_)->(false) |
+    (_,[])->(true) |
+    (h1::t1, h2::t2) -> (if h1 < h2 then true else 
+			if h1 = h2 then (isBefore t1 t2)
+			else (false) );;
 	
 
 
@@ -104,17 +108,29 @@ and getVarStrList termList =
 
 (* consult the predicate in user-defined rules *)
 
-let rec consultSinglePred_debug (rules, usedRules) predicate avlist  debug = match rules with 
-                                          RuleList ([]) -> (false, []) |
-                                          RuleList (clause::tail) -> (match clause with 
+let rec consultSinglePred_debug (indexRules, usedRules) predicate avlist realPath debug =
+                           match indexRules with
+			                [] -> ((false,[]),realPath) |
+					(i,clause)::tail -> 
+					 let numOfRules=List.length indexRules in
+				
+                                    (match clause with 
 								     Fact fp -> (
 								       let _=(
 								       if debug then(
 								       print_string ((string_of_predicate predicate) ^ " is trying to match fact "
 										    ^ (string_of_predicate fp) ^ "\n");) else ()) in
 								       match(Unify.unifyPredicates (fp,predicate) ) with 
-										None -> (consultSinglePred_debug (RuleList tail, (usedRules @ [clause])) predicate avlist debug ) |
-										Some sig0 -> (true, sig0) ) |
+										None -> (
+	match (incVert realPath numOfRules) with 
+	  (None) -> ((false,[]),realPath) |
+
+	  (Some newPath) -> (
+consultSinglePred_debug (tail, (usedRules @ [(clause)])) predicate avlist newPath debug ))
+
+
+ |
+										Some sig0 -> ((true, sig0),realPath) ) |
 
 								     Rule (headPred, (body,connList)) -> (
 								      let _=( if debug then(
@@ -122,9 +138,16 @@ let rec consultSinglePred_debug (rules, usedRules) predicate avlist  debug = mat
 										    ^ (string_of_clause (clause)) ^ "\n");) else ()) in
 
 								       match (Unify.unifyPredicates (headPred, predicate)) with
-											       None -> (consultSinglePred_debug (RuleList tail, (usedRules @ [clause]))
-													  predicate avlist debug) |
+											       None -> (
+	match (incVert realPath numOfRules) with 
+	  (None) -> ((false,[]),realPath) |
+
+	  (Some newPath) -> (
+consultSinglePred_debug (tail, (usedRules @ [(i,clause)])) predicate avlist newPath debug )
+
+													 ) |
 											       Some sig0 -> (
+												 let newPath=realPath @ [0] in
 
 let _= ( if debug then
 (print_string ("\n after unifying head and query, the following subst function is gen:\n" ^
@@ -141,7 +164,7 @@ let _= ( if debug then (
 print_string ("\nAfter applying the subst function gen from unification, new body is :\n"
 	     ^ (ProjCommon.stringOfPredList newBody connList) ^"\n" );) else ()) in
 
-													 match (consult_debug (RuleList(usedRules @ (clause::tail)))
+													 match (consult_debug ((usedRules @ (clause::tail)))
 														  (Query (newBody, ","::connList)) true avoidList debug ) with
 													   (false,_) -> (false,[]) |
 													   (true, tailSig) -> (match (Unify.composeSubst tailSig sig0) with

@@ -1,2 +1,3 @@
-cat(tom) .
+cat(tom).
+cat(jim).
 dog(_) :- true.
