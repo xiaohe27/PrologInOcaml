@@ -4,18 +4,36 @@ open Parser
 open Unify
 open Evaluator
 open Interpreter
+open Backtrack
 
-(* Lexing.from_channel stdin *)
+
+
+(*Given a prolog program AST in ocaml, execute its semantics and return a result*)
+let addAComma q = match q with 
+                      Query (pl,connList) -> (Query (pl, (","::connList)) );;
+
+let addACommaToRuleList rules = 
+	match rules with 
+			
+
+let addCommaToEveryConnList pgm = 
+	match pgm with
+	Prog(rules, query)-> Prog(rules, query) |
+	ProgFromQuery(query) -> ([], query)
+
+(* get pair of indexed rules and query from as string *)
+let getIndexedRulesAndQueryFromStr pgmStr = 
+	let parsedPgm= Glue.parseProgram pgmStr in
+	(match parsedPgm with
+		Prog(rules, query)-> (getIndexedRules rules, query) |
+		ProgFromQuery(query) -> ([], query) ) ;;
+
 
 (*Given a prolog string, return a rule list*)
 let parseRules s = Parser.rules Lexer.token (Lexing.from_string s);;
 
 (*Given a prolog string, return a prolog program AST in ocaml*)
 let parseProgram s = Parser.program Lexer.token (Lexing.from_string s);;
-
-(*Given a prolog program AST in ocaml, execute its semantics and return a result*)
-let addAComma q = match q with 
-                      Query (pl,connList) -> (Query (pl, (","::connList)) );;
 
 let execProgram pgm = match pgm with 
                         Prog(rules,query) -> (Interpreter.consult rules (addAComma query) true []) |
@@ -27,7 +45,12 @@ let debugProgram pgm =  match pgm with
 
 
 (* print result *)
-let printResult result = match result with
+let rec printResultList resultList =
+	match resultList with  
+	[] -> () |
+	curResult::tail -> (printResult curResult; printResultList tail)
+
+and printResult result = match result with
                           (b,sigma) -> (			   			    
 			    print_string ("\n"^ (string_of_bool b) ^ ".\n" ^ (ProjCommon.string_of_subst sigma) ^ "\n");) ;;
 
@@ -51,3 +74,15 @@ let simulateProgram pgmStr =
 
 				   let updatedResult= refineResult result pgm in 
 				   printResult updatedResult;;
+
+
+(* invoke the backtrack algorithm *)
+let findAllResults pgmStr = let (indexedRules, query) = Backtrack.getIndexedRulesAndQueryFromStr pgmStr in
+			    let goodQuery= addAComma query in
+			    let resultList= Backtrack.getAllSol indexedRules goodQuery true [] in
+				printResultList resultList ;;
+				
+
+
+
+

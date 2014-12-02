@@ -4,7 +4,7 @@ open Parser
 open Unify
 open Evaluator
 open Interpreter
-open Glue
+
 
 
 
@@ -19,21 +19,6 @@ let rec getIndexedRulesHelper rules curIndex = (
 
 let getIndexedRules rules = getIndexedRulesHelper rules 0;;
 
-
-let getIndexedProgramFromSourceCode () = 
-	let _=print_endline "Give the path to the prolog program please." in
-	let file= read_line () in 
-	let lexbuf = Lexing.from_channel (open_in file) in
-	let parsedPgm= Parser.program Lexer.token lexbuf in
-	(match parsedPgm with
-		Prog(rules, query)-> (getIndexedRules rules, query) |
-		ProgFromQuery(query) -> ([], query) ) ;;
-
-
-let printIndexedRulesFromFile () =
-	let (indexedRules,_) = getIndexedProgramFromSourceCode () in
-	print_string (ProjCommon.stringOfIndexedRules indexedRules) ;; 
-	
 
 
 (*Get all the solutions for a singlePred*)
@@ -91,7 +76,7 @@ Query(predList, connList) ->
 
 
 and evalPureQuery query =
-   (Interpreter.consult (RuleList([])) (Glue.addAComma query) true [])
+   (Interpreter.consult (RuleList([])) (query) true [])
 
 
 and applyFirstResultToPredList fstPred fstPredResultList tailPredList connList indexedRules lastBool avlist =

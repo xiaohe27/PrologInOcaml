@@ -10,8 +10,11 @@ ocamlc -c lexer.ml
 ocamlc -c unify.ml
 ocamlc -c evaluator.ml
 ocamlc -c interpreter.ml
+ocamlc -c backtrack.ml
 
 ocamlc -c glue.ml
+
+
 
 sh genExecutable.sh play
 sh genExecutable.sh readFile
