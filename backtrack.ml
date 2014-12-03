@@ -27,7 +27,7 @@ let rec getAllSol4Pred indexedRules pred avlist =
   match indexedRules with
     [] -> ([Interpreter.eval_predicate (RuleList([])) pred []]) |
 
-    curRule::remainingRuleList -> 
+    (_,curRule)::remainingRuleList -> 
       (
        match curRule with 
 	 Fact fp -> (match(Unify.unifyPredicates (fp,pred) ) with 

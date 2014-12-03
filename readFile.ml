@@ -4,6 +4,7 @@ open Parser
 open Unify
 open Evaluator
 open Interpreter
+open Backtrack
 open Glue
 
 (*Get the path of the prolog program*)
@@ -22,7 +23,7 @@ try (
 	
 	ProgFromQuery(query) -> (Prog(rules,query))  ) in
 
-	let result= Glue.refineResult (Glue.execProgram newPgm) newPgm in 
+	let result= Glue.refineResult (Glue.getQueryFromPgm newPgm) (Glue.execProgram newPgm) in 
 	let _=	printResult result in
 	match newPgm with 
 	Prog(newRules, _) -> (loop newRules) |

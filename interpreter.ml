@@ -102,7 +102,7 @@ print_string ("\nAfter applying the subst function gen from unification, new bod
 	     ^ (ProjCommon.stringOfPredList newBody connList) ^"\n" );) else ()) in
 
 													 match (consult_debug (RuleList(usedRules @ (clause::tail)))
-														  (Query (newBody, ","::connList)) true avoidList debug ) with
+														  (Query (newBody, connList)) true avoidList debug ) with
 													   (false,_) -> (false,[]) |
 													   (true, tailSig) -> (match (Unify.composeSubst tailSig sig0) with
 															       None -> (true, []) |
@@ -119,8 +119,8 @@ and consult_debug rules query lastBool avlist debug  =
 
 	 [singlePred] -> (let (singleBool, singleSig) =(eval_predicate_debug rules singlePred avlist debug) in
 			  match connList with 
-			  ","::connTail -> ((singleBool && lastBool), singleSig) |
-			  ";"::connTail -> ((singleBool || lastBool), singleSig) |
+			  connTail -> ((singleBool && lastBool), singleSig) |
+			  connTail -> ((singleBool || lastBool), singleSig) |
 			  _ -> (raise (Failure "Not enough connectives or unknown connective."))) |
 
          fstPred::tailPredList -> (let (fstBool, fstSig) = (eval_predicate_debug rules fstPred avlist debug) in

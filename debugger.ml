@@ -7,6 +7,7 @@ open Parser
 open Unify
 open Evaluator
 open Interpreter
+open Backtrack
 open Glue
 
 
@@ -35,7 +36,7 @@ let _ =
 	
 	ProgFromQuery(query) -> (Prog(rules,query))  ) in
 
-	let result= Glue.refineResult (Glue.debugProgram newPgm) newPgm in 
+	let result= Glue.refineResult (Glue.getQueryFromPgm newPgm) (Glue.debugProgram newPgm) in 
 	let _=	printResult result in
 	match parsedPgm with 
 	Prog(newRules, _) -> (loop newRules) |
