@@ -87,7 +87,7 @@ let simulateProgram pgmStr =
 
 (* invoke the backtrack algorithm *)
 let findAllResults pgmStr = let (indexedRules, query) = getIndexedRulesAndQueryFromStr pgmStr in
-			    let resultList= Backtrack.getAllSol indexedRules query true [] in
+			    let resultList= Backtrack.getAllSol indexedRules query true [] [] in
 				let refinedResults = List.map (refineResult query) resultList in
 				printResultList refinedResults ;;
 				

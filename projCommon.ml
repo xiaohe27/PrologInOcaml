@@ -34,6 +34,9 @@ type value =
   | ListVal of value list
   
 
+type blacklist = (int * string list) list;;
+
+
 
 (*value output*)
 let rec print_value v =
