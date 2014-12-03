@@ -60,15 +60,33 @@ let getIndexedRulesAndQueryFromStr pgmStr =
 		ProgFromQuery(query) -> ([], query) ) ;;
 
 
-(* print result *)
-let rec printResultList resultList =
-	match resultList with  
-	[] -> () |
-	curResult::tail -> (printResult curResult; printResultList tail)
+let getIndexedRulesAndQueryFromPgm pgm = 
+	
+	(match pgm with
+		Prog(rules, query)-> (getIndexedRules rules, query) |
+		ProgFromQuery(query) -> ([], query) ) ;;
 
-and printResult result = match result with
-                          (b,sigma) -> (			   			    
-			    print_string ("\n"^ (string_of_bool b) ^ ".\n" ^ (ProjCommon.string_of_subst sigma) ^ "\n");) ;;
+
+(* print result *)
+
+let printResult result = match result with
+                          (b,sigma) -> (
+				if sigma = [] then			   			    
+			    (print_string ("\n"^ (string_of_bool b) ^ ".\n");)
+				else if (b) then(
+			    print_string ((ProjCommon.string_of_subst sigma) ^ "\n");)
+				else (print_string "false\n";)
+				 ) ;;
+
+let rec printResultList resultList =
+	match (rmFalseResult resultList) with  
+	[] -> print_string "false\n" |
+	curResult::tail -> (printResult curResult; print_string " ; \n"; printResultList tail)
+
+and rmFalseResult resultList =
+match resultList with
+[] -> [] |
+(b,sigma)::tail -> if b=false then rmFalseResult tail else (b,sigma)::(rmFalseResult tail);;
 
 
 (*refine the result so that only the assignment to the free vars in the query get printed*)
@@ -86,10 +104,17 @@ let simulateProgram pgmStr =
 
 
 (* invoke the backtrack algorithm *)
-let findAllResults pgmStr = let (indexedRules, query) = getIndexedRulesAndQueryFromStr pgmStr in
+let findAllResultsFromPgmStr pgmStr = let (indexedRules, query) = getIndexedRulesAndQueryFromStr pgmStr in
 			    let resultList= Backtrack.getAllSol indexedRules query true [] [] in
 				let refinedResults = List.map (refineResult query) resultList in
 				printResultList refinedResults ;;
+
+let findAllResults pgm = let (indexedRules, query) = getIndexedRulesAndQueryFromPgm pgm in
+			    let resultList= Backtrack.getAllSol indexedRules query true [] [] in
+				
+				resultList
+				(*List.map (refineResult query) resultList*)
+				;;
 				
 
 

@@ -19,4 +19,4 @@ ocamlc -c glue.ml
 sh genExecutable.sh play
 sh genExecutable.sh readFile
 sh genExecutable.sh debugger
-sh genExecutable.sh backtrack
+sh genExecutable.sh play_all

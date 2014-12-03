@@ -62,7 +62,7 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
   let predStr= string_of_predicate pred in 
 
   match indexedRules with
-    [] -> ([Interpreter.eval_predicate (RuleList([])) pred []]) |
+    [] -> ([Interpreter.eval_predicate (RuleList([])) pred avlist]) |
 
     (i,curRule)::remainingRuleList -> 
       (
@@ -71,29 +71,24 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
 
        match curRule with 
 	 Fact fp -> (	
-		 print_string ((string_of_predicate pred) ^ " is trying to match fact "
-		^ (string_of_predicate fp) ^ "\n");
-
+		
 			match(Unify.unifyPredicates (fp,pred) ) with 
 		      	None -> (getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) |
 		       	Some sig0 ->
-print_string ("match sig0: "^ string_of_subst sig0);
+
 
 	 (true, sig0)::(getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) ) |
 	 
 	 Rule (headPred, (body,connList)) 
 		  -> (
 
-print_string ("\n" ^ (string_of_predicate pred) ^ " is trying to match the "
-										    ^ (string_of_clause (curRule)) ^ "\n");
 
 			match (Unify.unifyPredicates (headPred, pred)) with
 			None -> (getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist)
 			 |
 			Some sig0 -> ( 
 
-print_string ("\n after unifying head and query, the following subst function is gen:\n" ^
-	     (ProjCommon.string_of_subst sig0)^"\n");
+
 
 let newBlackList= addToBlackList blacklist i predStr in
 
@@ -103,19 +98,12 @@ let newBlackList= addToBlackList blacklist i predStr in
 				       let bodyQuery=(Query (newBody, connList)) in
 
 
-print_string ("\nAfter renaming, the body of the rule becomes:\n" ^
-	     (ProjCommon.stringOfPredList renamedBody connList) ^"\n" );
-
-print_string ("\nAfter applying the subst function gen from unification, new body is :\n"
-	     ^ (ProjCommon.stringOfPredList newBody connList) ^"\n" );
-
 
 				       let resList4CurRule = 
 					getResultListByApplyingSig (getAllSol (usedRules @ indexedRules) bodyQuery true avlist
 					newBlackList) sig0 in
-				       
-print_string "cur rule's result list is "; printResultList (resList4CurRule);
-let _= input_line (stdin) in
+
+
 
 				       resList4CurRule @ (getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist newBlackList)
 
@@ -137,6 +125,8 @@ match resList with
 
 
 and getAllSol indexedRules query lastBool avlist blacklist = (
+if lastBool = false then ([]) 
+else
 match query with
 Query(predList, connList) -> 
   ( match predList with
@@ -167,10 +157,6 @@ and applyFirstResultToPredList fstPred fstPredResultList tailPredList connList i
 		";"::_ -> (bool1 || lastBool) |
 		_ -> (raise (Failure "unknown connective."))) in
 
-
-print_string ((stringOfPredList tailPredList (connList)) ^ " is the old pred list\n");
-					print_string ("after eval first predicate, subst derived is "^(string_of_subst sig1) ^ "\n");
-					print_string ((stringOfPredList newTailPredList (List.tl connList)) ^ " is the updated tail pred list\n");
 
 
 	 let allResults4FirstResult = (getAllSol indexedRules (Query(newTailPredList, List.tl connList)) newLastBool avlist blacklist)
