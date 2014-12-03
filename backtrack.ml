@@ -121,7 +121,15 @@ match resList with
 		      (false,_) -> (getResultListByApplyingSig tail sigma) |
 		      (true, fstSig) -> (match (Unify.composeSubst fstSig sigma) with
 					        None -> (true, [])::(getResultListByApplyingSig tail sigma) |
-					        Some finalSig -> (true, finalSig)::(getResultListByApplyingSig tail sigma)) ) 
+					        Some finalSig0 ->
+
+let finalSig = (let updatedEQList= Unify.updateVarInSubst sigma finalSig0 in
+
+		match (Unify.unify updatedEQList) with
+			None -> [] |
+			Some fs -> fs ) in
+
+ (true, finalSig)::(getResultListByApplyingSig tail sigma)) ) 
 
 
 and getAllSol indexedRules query lastBool avlist blacklist = (

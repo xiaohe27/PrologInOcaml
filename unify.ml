@@ -56,6 +56,10 @@ let rec eqlist_subst subst constraintList= match constraintList with
 							          term_lift_subst subst term2) 
 								:: eqlist_subst subst tail;;
 
+let rec updateVarInSubst subst sigma =
+	match sigma with
+	[] -> [] |
+	(k,v)::tail -> ((subst_fun subst k), v)::(updateVarInSubst subst tail) ;;
 
 let rec updateSubst sigma substList = match substList with 
 						[] -> Some [] |

@@ -106,7 +106,14 @@ print_string ("\nAfter applying the subst function gen from unification, new bod
 													   (false,_) -> (false,[]) |
 													   (true, tailSig) -> (match (Unify.composeSubst tailSig sig0) with
 															       None -> (true, []) |
-															       Some finalSig -> (true, finalSig) ) ) ) ) 
+															       Some finalSig0 ->
+												
+let finalSig = (let updatedEQList= Unify.updateVarInSubst sig0 finalSig0 in
+
+		match (Unify.unify updatedEQList) with
+			None -> [] |
+			Some fs -> fs ) in
+ (true, finalSig) ) ) ) ) 
 
      (*Consult a list of predicates*)
      (*returns a result which is of the form bool * subst*)
