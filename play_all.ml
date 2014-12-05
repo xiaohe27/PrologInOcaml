@@ -1,5 +1,5 @@
 (*
-  interactive-prolog simulator debugger 
+  interactive-prolog program interpreter 
 *)
 open ProjCommon
 open Lexer
@@ -16,7 +16,7 @@ let is_interactive = 0 = (Sys.command "[ -t 0 ]")
 
 let _ =
   (if is_interactive
-      then print_endline "\nWelcome to the prolog debugger \n"
+      then print_endline "\nWelcome to the prolog simulator \n"
       else ());
   let rec loop rules = 
   try
@@ -28,7 +28,7 @@ let _ =
 
 	(try 
 	
-	let parsedPgm= Parser.program Lexer.token lexbuf in
+	let parsedPgm= addCommaToPgm (Parser.program Lexer.token lexbuf) in
 	let RuleList(existingRules)= rules in
 	let newPgm=(match parsedPgm with 
 	Prog(RuleList(curRules), query) -> 
@@ -36,8 +36,8 @@ let _ =
 	
 	ProgFromQuery(query) -> (Prog(rules,query))  ) in
 
-	let result= Glue.refineResult (Glue.getQueryFromPgm newPgm) (Glue.debugProgram newPgm) in 
-	let _=	printResult result in
+	let resultList= (Glue.findAllResults newPgm) in 
+	let _=	printResultList resultList in
 	match parsedPgm with 
 	Prog(newRules, _) -> (loop newRules) |
 	ProgFromQuery(_) -> (loop rules)  		
@@ -52,5 +52,3 @@ let _ =
               loop rules))
   with Lexer.EndInput -> exit 0
  in loop (RuleList [])
-
-

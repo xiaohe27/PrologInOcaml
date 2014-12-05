@@ -34,6 +34,9 @@ type value =
   | ListVal of value list
   
 
+type blacklist = (int * string list) list;;
+
+
 
 (*value output*)
 let rec print_value v =
@@ -110,7 +113,8 @@ and string_of_subst subst = match subst with
 and string_of_predicate pred=match pred with
 				Identifier(id) -> id |
 				Predicate(f,tl) -> (f ^ "(" ^
-				(stringOfTermList tl) ^ ")" ) ;;
+				(stringOfTermList tl) ^ ")" ) |
+				VarAsPred(v) -> v ;;
 
 let rec stringOfPredList predList connList= match predList with
 					[] -> "" |
@@ -202,7 +206,8 @@ and rmDup lst = match lst with []->[] |
 and freeVarsInPredicate pred = 
 	match pred with
 	Identifier id -> ([]) |
-	Predicate (f,tl) -> (toSingleStrArr (List.map (freeVarsInTerm) tl)) ;;
+	Predicate (f,tl) -> (toSingleStrArr (List.map (freeVarsInTerm) tl)) |
+	VarAsPred v -> [v] ;;
 
 let rec listSubtract list1 list2 = 
 	match list2 with
@@ -234,3 +239,36 @@ let freeVarsInProgram pgm =
 		rmDup (listSubtract freeVarsInRules binders) ) | (*not precise*)
 	
 	ProgFromQuery(query) -> (freeVarsInQuery query) ;;
+
+
+(*Type testing*)
+let isTypeTesting op = match op with 
+			"var" -> true |
+			"nonvar" -> true |
+			"atom" -> true |
+			"integer" -> true |
+			"float" -> true |
+			"number" -> true |
+			"atomic" -> true |
+			"compound" -> true |
+			"callable" -> true |
+			"list" -> true |
+			"is_list" -> true |
+			_ -> false;;
+
+
+let retBool op = match op with 
+			">" -> true |
+			"<" -> true |
+			"=:=" -> true |
+			">=" -> true |
+			"<=" -> true |
+			"=\\=" -> true |
+			"," -> true |
+			";" -> true |
+			_ -> false;;
+
+(* Test whether a function is built-in function *)
+let isBuiltInOp op = if (isTypeTesting op) then true 
+                      else if (op = "=" || op = "is" || op = "write"
+		               || op = "nl" ) then true else (retBool op);; 

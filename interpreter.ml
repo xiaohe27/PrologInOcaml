@@ -102,11 +102,18 @@ print_string ("\nAfter applying the subst function gen from unification, new bod
 	     ^ (ProjCommon.stringOfPredList newBody connList) ^"\n" );) else ()) in
 
 													 match (consult_debug (RuleList(usedRules @ (clause::tail)))
-														  (Query (newBody, ","::connList)) true avoidList debug ) with
+														  (Query (newBody, connList)) true avoidList debug ) with
 													   (false,_) -> (false,[]) |
 													   (true, tailSig) -> (match (Unify.composeSubst tailSig sig0) with
 															       None -> (true, []) |
-															       Some finalSig -> (true, finalSig) ) ) ) ) 
+															       Some finalSig0 ->
+												
+let finalSig = (let updatedEQList= Unify.updateVarInSubst sig0 finalSig0 in
+
+		match (Unify.unify updatedEQList) with
+			None -> [] |
+			Some fs -> fs ) in
+ (true, finalSig) ) ) ) ) 
 
      (*Consult a list of predicates*)
      (*returns a result which is of the form bool * subst*)
@@ -115,7 +122,7 @@ and consult_debug rules query lastBool avlist debug  =
     match query with Query(predList, connList) -> (
    
     match predList with 
-	 [] -> (raise (Failure "rule's body is empty!")) |
+	 [] -> (raise (Failure "Query is empty!")) |
 
 	 [singlePred] -> (let (singleBool, singleSig) =(eval_predicate_debug rules singlePred avlist debug) in
 			  match connList with 
@@ -149,6 +156,8 @@ let _= (if debug then (
 
 (*Consult a predicate which is either user-defined or built-in function*)
 and eval_predicate_debug rules predicate avlist debug = match predicate with 
+				   VarAsPred v -> (raise (Failure "Do not waste your time! Maybe after 1000 years we can get the answer?")) |
+
                                    Identifier fact -> (
 
 let _=(if debug then (
@@ -162,7 +171,7 @@ print_string ((fact)^" is a fact!");
 							 _ -> consultSinglePred_debug (rules,[]) predicate avlist debug) |
 						                  
 
-				   Predicate (f, tl) -> (if (Evaluator.isBuiltInOp f)   (*It is built in operation*)
+				   Predicate (f, tl) -> (if (ProjCommon.isBuiltInOp f)   (*It is built in operation*)
 				                          				       
 				                          then (
 let _=( if debug then (
@@ -171,7 +180,7 @@ let _=( if debug then (
 				                            if (List.length tl) == 1 then (
 							    let singleTerm = (List.hd tl) in
 
-							    if (Evaluator.isTypeTesting f) then  (*it is type testing*)
+							    if (ProjCommon.isTypeTesting f) then  (*it is type testing*)
 							         (Evaluator.typeTest f singleTerm, [])
 							    
 							    else (if f = "not" then (getBool (Evaluator.monOpApply f (Evaluator.eval_term singleTerm)), [])
@@ -218,7 +227,7 @@ let _=( if debug then (
 										(true, [(x,Evaluator.val2Term rhsVal)]) |
 									      _ -> (false, [])) |
 
-								     _ -> (if (Evaluator.retBool f) then (match (binOpApply f (eval_term (fst eq), eval_term (snd eq)))
+								     _ -> (if (ProjCommon.retBool f) then (match (binOpApply f (eval_term (fst eq), eval_term (snd eq)))
 													 with BoolVal true -> (true,[]) |
 													      BoolVal false -> (false,[]) |
 													      _ -> (raise (Failure "Unknown exception.")) )
