@@ -1,5 +1,5 @@
 open ProjCommon
-
+open Unify
 
 let rec updateMemory m x v = match m with
 				[] -> [(x,v)] |
@@ -31,37 +31,7 @@ let monOpApply op v = match op with
 		_ -> (raise (Failure "Not supported this op at present"));;
 
 
-(*Type testing*)
-let isTypeTesting op = match op with 
-			"var" -> true |
-			"nonvar" -> true |
-			"atom" -> true |
-			"integer" -> true |
-			"float" -> true |
-			"number" -> true |
-			"atomic" -> true |
-			"compound" -> true |
-			"callable" -> true |
-			"list" -> true |
-			"is_list" -> true |
-			_ -> false;;
 
-
-let retBool op = match op with 
-			">" -> true |
-			"<" -> true |
-			"=:=" -> true |
-			">=" -> true |
-			"<=" -> true |
-			"=\\=" -> true |
-			"," -> true |
-			";" -> true |
-			_ -> false;;
-
-(* Test whether a function is built-in function *)
-let isBuiltInOp op = if (isTypeTesting op) then true 
-                      else if (op = "=" || op = "is" || op = "write"
-		               || op = "nl" ) then true else (retBool op);; 
 
 let nlOpApply () = print_newline (); true;;
 

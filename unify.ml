@@ -1,6 +1,14 @@
 open ProjCommon
 
 
+(*Find the value corresponding to the key in the subst if found*)
+let rec getTermFromSubst subst key =
+ match subst with
+	[] -> None |
+	(var,term)::tail -> 
+		(if var = key then (Some term)
+		else (getTermFromSubst tail key));;
+
 (* Given a substitution and a variable, the replacement term will be returned.  *)
 let rec subst_fun subst = fun strVar -> match subst with
 				[] -> Var strVar  |
@@ -18,7 +26,20 @@ let rec term_lift_subst subst term = match term with
 
 and substInPredicate subst predicate = match predicate with 
 						Identifier _ -> predicate |
-						Predicate(f,tl) -> Predicate(f, List.map (term_lift_subst subst) tl);;
+						Predicate(f,tl) -> Predicate(f, List.map (term_lift_subst subst) tl) |
+						VarAsPred v -> (match (getTermFromSubst subst v) with
+								None -> (VarAsPred v) |
+								Some term -> (match term with 
+										Var x -> (VarAsPred x) |
+										ConstTerm c -> (match c with
+												BoolConst b -> (Identifier (string_of_const c)) |
+												_ -> (raise (Failure ("Callable is expected, found "^ (string_of_term term)))) ) |
+
+										CompoundTerm(f,tl) -> (if (ProjCommon.retBool f) then (Predicate(f,tl)) 
+													else (raise (Failure ("Callable is expected, found "^ (string_of_term term)))) ) |
+
+										ListTerm(tl) -> (raise (Failure ("Callable is expected, found "^ (string_of_term term)))) |
+										PredAsTerm(pred) -> (pred) ));;
  
 
 (*Occurs check*)
@@ -30,7 +51,8 @@ let rec occurs x term = match term with
 			PredAsTerm pred -> 
 				(match pred with
 				 Identifier _ -> false |
-				 Predicate(f,tl) -> occursInList x tl)
+				 Predicate(f,tl) -> occursInList x tl |
+				 VarAsPred v -> (if x = v then true else false))
  
 			and occursInList x termList = match termList with
 				[] -> false |
@@ -246,9 +268,21 @@ let rec unifyPredicates (pred1,pred2) =
 	match (pred1, pred2) with
 		(Identifier id1, Identifier id2) -> (if id1=id2 then Some [] else None) |
 		(Identifier id1, Predicate(f,tl)) -> (None) |
+		(Identifier _, VarAsPred _) -> (raise (Failure "Do not waste your time! Maybe after 1000 years we can get the answer?")) |
 		(Predicate(f,tl), Identifier id2) -> (None) |
 		(Predicate(f1,tl1), Predicate(f2,tl2)) -> (
 			if (not(f1 = f2)) then None 
 			else( match (genPairList tl1 tl2) with
 				None -> None |
-				Some eqlst -> (unifyHead eqlst))) ;;
+				Some eqlst -> (unifyHead eqlst))) |
+		(Predicate _, VarAsPred _) -> (raise (Failure "Do not waste your time! Maybe after 1000 years we can get the answer?")) |
+		(VarAsPred _, _) -> (raise (Failure "Do not waste your time! Maybe after 1000 years we can get the answer?"));;
+
+
+
+
+
+
+
+
+
