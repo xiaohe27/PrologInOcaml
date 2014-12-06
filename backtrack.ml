@@ -117,7 +117,7 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
     (i,curRule)::remainingRuleList -> 
       (
 	  if (isInBlackList indexedRules blacklist i predStr (ProjCommon.onlyVarsInPred pred)) then 
-(getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) else
+([ (false, []) ]) else
 
        match curRule with 
 	 Fact fp -> (	
@@ -262,6 +262,7 @@ let _= (read_line ()) in
 
 ;;
 		
+
 
 
 
