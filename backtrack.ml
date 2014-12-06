@@ -27,7 +27,7 @@ print_string "\nBlacklist is:\n";
 print_string (ProjCommon.stringOfBlackList blacklist);
 
 print_string "\n\n";
-
+let _=(read_line ()) in ()
 ;;
 
 
@@ -93,6 +93,7 @@ let rec isInBlackList indexedRules blacklist i pred =
 		let constPart=(ProjCommon.getAllConstInPred pred) in
 				
 		let foundInBlist=(ProjCommon.isContainedInOneStrInTheList listI constPart) in 
+		
 		foundInBlist)
 		) 
 
@@ -154,6 +155,7 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
 
 
 let newBlackList= addToBlackList blacklist i (ProjCommon.string_of_predicate pred) in
+
 
 				       let avoidList= Interpreter.getAVList sig0 @ avlist in
 				       let renamedBody= Interpreter.renameFreeVarsInClause avoidList curRule in

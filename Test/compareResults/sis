@@ -1,0 +1,42 @@
+Prolog Program:
+sis(joyce,niu).
+sis(keke,joyce).
+sis(joyce,ker).
+sis(X,Y) :- sis(X,Z), sis(Z,Y).
+
+
+std prolog:
+?- sis(X,Y).
+X = joyce,
+Y = niu ;
+X = keke,
+Y = joyce ;
+X = joyce,
+Y = ker ;
+ERROR: Out of local stack
+?- 
+
+
+Our app:
+X=joyce.
+Y=niu.
+
+ ; 
+X=keke.
+Y=joyce.
+
+ ; 
+X=joyce.
+Y=ker.
+
+ ; 
+X=keke.
+Y=niu.
+
+ ; 
+X=keke.
+Y=ker.
+
+ ; 
+false
+

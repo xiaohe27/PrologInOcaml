@@ -319,9 +319,9 @@ and onlyConstInTermList tl =
 	t1::tail -> (
 		match t1 with
 		Var v -> (false) | 
-		ConstTerm _ -> true |
-		CompoundTerm _ -> true |
-            	ListTerm _ -> true |
+		ConstTerm _ -> onlyConstInTermList tail |
+		CompoundTerm _ -> onlyConstInTermList tail |
+            	ListTerm _ -> onlyConstInTermList tail |
 	    	PredAsTerm pred0 -> onlyConstInPred pred0);;
 
 
