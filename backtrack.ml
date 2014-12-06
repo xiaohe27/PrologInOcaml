@@ -6,6 +6,31 @@ open Evaluator
 open Interpreter
 
 
+(*Debugger*)
+let rec printDebug indexedRules usedRules sigma pred avlist blacklist =
+print_string "\nCur rules:\n";
+print_string (ProjCommon.stringOfIndexedRules indexedRules);
+
+print_string "\nUsed rules:\n";
+print_string (ProjCommon.stringOfIndexedRules usedRules);
+
+print_string "\nSigma:\n";
+print_string (ProjCommon.string_of_subst sigma);
+
+print_string "\nCur pred is:\n";
+print_string (ProjCommon.string_of_predicate pred);
+
+print_string "\nAvoid list is:\n";
+print_string (ProjCommon.string_of_stringList avlist);
+
+print_string "\nBlacklist is:\n";
+print_string (ProjCommon.stringOfBlackList blacklist);
+
+print_string "\n\n";
+let _=(read_line ()) in ()
+;;
+
+
 (* print result *)
 let rec printResultList resultList =
 	match resultList with  
@@ -28,14 +53,52 @@ let rec getIndexedRulesHelper rules curIndex = (
 
 let getIndexedRules rules = getIndexedRulesHelper rules 0;;
 
+let rec getClauseWithIndex indexedRules i =
+   match indexedRules with
+	[] -> None |
+	(index,clause)::tail -> (if index=i then Some clause
+				else getClauseWithIndex tail i )
+;;
+
 
 (*check whether a given str is in the black list of a rule*)
-let rec isInBlackList blacklist i predStr =
+let rec isInBlackList indexedRules blacklist i pred =
+	let predStr= string_of_predicate pred in 
+        let isPredAllVars= (ProjCommon.onlyVarsInPred pred) in
+
 	match (getItemWithIndexI blacklist i) with
 	None -> false |
 	Some listI ->
- 
-	 (if occursIn predStr listI then true else false)
+ 	 let isHeadPredAllVars = 
+	(
+		 match  (getClauseWithIndex indexedRules i) 
+	with     None -> (raise (Failure ("Rule " ^ (string_of_int i) ^ " is not in the knowledge base.")))
+		
+	|	Some ruleI -> (
+	        let headI = (match ruleI with
+				Fact hp -> hp |
+				Rule (headPred,_) -> headPred ) in
+		
+		ProjCommon.onlyVarsInPred headI) 
+		
+
+	) in (
+		if isHeadPredAllVars && isPredAllVars 
+		then (true)
+		else  		
+	 	(if occursIn predStr listI then true else(
+				
+		if (ProjCommon.onlyConstInPred pred) then (false)
+		else(		
+		let constPart=(ProjCommon.getAllConstInPred pred) in
+				
+		let foundInBlist=(ProjCommon.isContainedInOneStrInTheList listI constPart) in 
+		
+		foundInBlist)
+		) 
+
+		)
+	)
 
 and getItemWithIndexI blacklist i =
 match blacklist with 
@@ -59,15 +122,15 @@ let rec addToBlackList blacklist i predStr =
 (*Get all the solutions for a singlePred*)
 (*Get a results list. Will assume conn list for combining bools of predicate list is complete*)
 let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
-  let predStr= string_of_predicate pred in 
+   
 
   match indexedRules with
     [] -> ([Interpreter.eval_predicate (RuleList([])) pred avlist]) |
 
     (i,curRule)::remainingRuleList -> 
       (
-	  if (isInBlackList blacklist i predStr) then 
-(getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) else
+	  if (isInBlackList indexedRules blacklist i pred) then 
+([ (false, []) ]) else
 
        match curRule with 
 	 Fact fp -> (	
@@ -76,6 +139,7 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
 		      	None -> (getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) |
 		       	Some sig0 ->
 
+			
 
 	 (true, sig0)::(getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) ) |
 	 
@@ -90,7 +154,8 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
 
 
 
-let newBlackList= addToBlackList blacklist i predStr in
+let newBlackList= addToBlackList blacklist i (ProjCommon.string_of_predicate pred) in
+
 
 				       let avoidList= Interpreter.getAVList sig0 @ avlist in
 				       let renamedBody= Interpreter.renameFreeVarsInClause avoidList curRule in
@@ -100,7 +165,7 @@ let newBlackList= addToBlackList blacklist i predStr in
 
 
 				       let resList4CurRule = 
-					getResultListByApplyingSig (getAllSol (usedRules @ indexedRules) bodyQuery true avlist
+					getResultListByApplyingSig (getAllSol (usedRules @ indexedRules) bodyQuery true avoidList
 					newBlackList) sig0 in
 
 
@@ -117,7 +182,10 @@ and getResultListByApplyingSig resList sigma =
 match resList with
   [] -> [] |
 
-  fstResult::tail -> (match fstResult with 
+  fstResult::tail -> (
+
+
+		      match fstResult with 
 		      (false,_) -> (getResultListByApplyingSig tail sigma) |
 		      (true, fstSig) -> (match (Unify.composeSubst fstSig sigma) with
 					        None -> (true, [])::(getResultListByApplyingSig tail sigma) |
@@ -139,11 +207,19 @@ match query with
 Query(predList, connList) -> 
   ( match predList with
     [] -> ((raise (Failure "Query is empty!"))) |
-    [singlePred] -> (getAllSol4Pred indexedRules [] singlePred avlist blacklist) |
-    fstPred::predTailList ->  
-	 let fstPredResultList = ( getAllSol4Pred indexedRules [] fstPred avlist blacklist) in   
-        (applyFirstResultToPredList fstPred fstPredResultList predTailList connList indexedRules lastBool avlist blacklist) ) 
+    [singlePred] -> (
+	
+	getAllSol4Pred indexedRules [] singlePred avlist blacklist) |
 
+    fstPred::predTailList ->  (	
+
+	 let fstPredResultList = ( getAllSol4Pred indexedRules [] fstPred avlist blacklist) in  
+
+
+        (applyFirstResultToPredList fstPred fstPredResultList predTailList connList indexedRules lastBool avlist blacklist)
+)
+
+) 
 )
 
 
@@ -160,6 +236,9 @@ and applyFirstResultToPredList fstPred fstPredResultList tailPredList connList i
 	   let refinedSig= filter freeVarsInFstPred sig1 in
 
 	   let newTailPredList= List.map (substInPredicate refinedSig) tailPredList in
+
+
+
 	   let newLastBool= (match connList with
 		","::_ -> (bool1 && lastBool) |
 		";"::_ -> (bool1 || lastBool) |
@@ -167,18 +246,24 @@ and applyFirstResultToPredList fstPred fstPredResultList tailPredList connList i
 
 
 
-	 let allResults4FirstResult = (getAllSol indexedRules (Query(newTailPredList, List.tl connList)) newLastBool avlist blacklist)
-	 in match remainingFstResultList with
+	 let allResults4FirstResult =
+	ProjCommon.addSigToResultList refinedSig (getAllSol indexedRules (Query(newTailPredList, List.tl connList)) newLastBool avlist blacklist)
+
+	 in
+
+
+ match remainingFstResultList with
 		[] -> allResults4FirstResult | 
 		
 		_ -> (allResults4FirstResult @
-			(applyFirstResultToPredList fstPred remainingFstResultList tailPredList connList indexedRules lastBool avlist 		blacklist))	
+			(applyFirstResultToPredList fstPred remainingFstResultList tailPredList connList indexedRules lastBool avlist blacklist))	
 	)
 
   
 
 ;;
 		
+
 
 
 

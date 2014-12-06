@@ -26,7 +26,7 @@ let getBool boolVal = match boolVal with
 let rec renameFreeVarsInClause avoidList clause =
             match clause with
               Fact fp -> [fp] |
-              Rule (headPred, (body,_)) -> (
+              Rule (headPred, (body,connList)) -> (
 	       let freeVarsInBody= ProjCommon.freeVarsInClause clause in
 	       let numOfFreeVars= List.length freeVarsInBody in
 	       if numOfFreeVars = 0 then (body) else(
@@ -34,8 +34,16 @@ let rec renameFreeVarsInClause avoidList clause =
 	       let binders= ProjCommon.freeVarsInPredicate headPred in
 	       let genFreshVars= ProjCommon.get_n_freshVars numOfFreeVars (avoidList @ binders) in
 	       let subst4Fresh= genSubst4Fresh freeVarsInBody genFreshVars in 
-	       (List.map (Unify.substInPredicate subst4Fresh) body)  
-	         )) 
+	       ( 
+
+(*
+		print_string ("Before renaming, clause is "^(ProjCommon.string_of_clause clause));
+		print_string ("After renaming, pred list is "^(ProjCommon.stringOfPredList 
+		(List.map (Unify.substInPredicate subst4Fresh) body) connList)^"\n");   *)
+
+		List.map (Unify.substInPredicate subst4Fresh) body)  
+	         )
+	 ) 
 
 and genSubst4Fresh oldVarList newNameList =
   if (List.length oldVarList) != (List.length newNameList) then (raise (Failure "cannot gen subst 4 fresh because two list have diff len."))

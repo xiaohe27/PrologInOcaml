@@ -139,6 +139,21 @@ let rec stringOfIndexedRules indexRules =
 				("\n" ^ stringOfIndexedRules tail)) ;;
 
 
+let rec string_of_stringList strList =
+ match strList with
+	[] -> "" |
+	str::tail -> str ^ ";" ^(string_of_stringList tail);;
+
+let rec stringOfBlackList blist =
+    match blist with
+	[] -> "" |
+	(n, sl)::(tail) ->
+	("(" ^ (string_of_int n) ^ (",") ^(string_of_stringList sl)^")" )
+	^";\n"^(stringOfBlackList tail)
+;;
+
+
+
 (* Fresh Name stuff *)
 
 let int_to_string n =
@@ -272,3 +287,131 @@ let retBool op = match op with
 let isBuiltInOp op = if (isTypeTesting op) then true 
                       else if (op = "=" || op = "is" || op = "write"
 		               || op = "nl" ) then true else (retBool op);; 
+
+
+(* Test whether a predicate only contains vars in the term list *)
+let rec onlyVarsInPred pred =
+	match pred with
+	Identifier id -> (false) |
+	Predicate (f,termL) -> (onlyVarsInTermList termL) |
+	VarAsPred v -> (true)
+ 
+and onlyVarsInTermList tl =
+	match tl with
+	[] -> true |
+	t1::tail -> (
+		match t1 with
+		Var v -> (onlyVarsInTermList tail) | 
+		ConstTerm _ -> false |
+		CompoundTerm _ -> false |
+            	ListTerm _ -> false |
+	    	PredAsTerm pred0 -> onlyVarsInPred pred0);;
+
+let rec onlyConstInPred pred =
+	match pred with
+	Identifier id -> (true) |
+	Predicate (f,termL) -> (onlyConstInTermList termL) |
+	VarAsPred v -> (false)
+ 
+and onlyConstInTermList tl =
+	match tl with
+	[] -> true |
+	t1::tail -> (
+		match t1 with
+		Var v -> (false) | 
+		ConstTerm _ -> onlyConstInTermList tail |
+		CompoundTerm _ -> onlyConstInTermList tail |
+            	ListTerm _ -> onlyConstInTermList tail |
+	    	PredAsTerm pred0 -> onlyConstInPred pred0);;
+
+
+
+(* Test whether a string str1 contains another string str2 *)
+let rec strContains str1 str2 =
+if str1=str2 then true 
+else (
+let len1=String.length str1 in
+let len2=String.length str2 in 
+if len1 <= len2 then false 
+else 
+let sub1 = String.sub str1 0 (len2) in 
+if sub1 = str2 then true 
+else
+let remain1= String.sub str1 1 (len1 - 1) in 
+strContains remain1 str2
+);; 
+			
+
+let rec isAllTrueBoolList boolList=
+match boolList with
+[] -> true |
+curBool::tail -> 
+(if curBool = false then false
+else (isAllTrueBoolList tail))
+;; 
+
+
+let rec getAllConstInTermList tl =
+match tl with
+[] -> [] |
+
+curTerm::tail -> 
+(match curTerm with
+		Var v -> getAllConstInTermList tail | 
+		PredAsTerm pred0 -> getAllConstInTermList tail |
+		_ -> curTerm::(getAllConstInTermList tail) 		
+	    	
+)
+;;
+
+let getAllConstInPred pred=
+match pred with
+	Identifier _ -> [] |
+	Predicate (_,termL) -> (getAllConstInTermList termL) |
+	VarAsPred _ -> []
+
+
+(*Given a string list of items in blacklist, 
+test whether all the constant terms in constTL 
+occur in one entry of the list*)
+let rec isContainedInOneStrInTheList strList constTL =
+match strList with
+[] -> false |
+curStr::tail -> (
+if (areFoundInOneStr constTL curStr)
+then (true)
+else (isContainedInOneStrInTheList tail constTL)
+) 
+
+and areFoundInOneStr constTL str=
+let listOfTermStr= List.map (string_of_term) constTL in
+let occursCheckList= List.map (strContains str) listOfTermStr in
+isAllTrueBoolList occursCheckList
+;;
+
+
+let addSigToResult sigma result =
+match result with
+(b,subst) -> (b, sigma @ subst);;
+
+let addSigToResultList sigma rl =
+List.map (addSigToResult sigma) rl;;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
