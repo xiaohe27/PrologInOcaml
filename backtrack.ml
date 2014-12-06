@@ -63,7 +63,10 @@ let rec getClauseWithIndex indexedRules i =
 ;;
 
 (*check whether a given str is in the black list of a rule*)
-let rec isInBlackList indexedRules blacklist i predStr isPredAllVars =
+let rec isInBlackList indexedRules blacklist i pred =
+	let predStr= string_of_predicate pred in 
+        let isPredAllVars= (ProjCommon.onlyVarsInPred pred) in
+
 	match (getItemWithIndexI blacklist i) with
 	None -> false |
 	Some listI ->
@@ -84,7 +87,12 @@ let rec isInBlackList indexedRules blacklist i predStr isPredAllVars =
 		if isHeadPredAllVars && isPredAllVars 
 	then (print_string ("both head and query are pure vars.\n"); true)
 		else  		
-	 	(if occursIn predStr listI then true else false)
+	 	(if occursIn predStr listI then true else(
+		let constPart=() in 
+		
+		) 
+
+	)
 	)
 
 and getItemWithIndexI blacklist i =
@@ -109,14 +117,14 @@ let rec addToBlackList blacklist i predStr =
 (*Get all the solutions for a singlePred*)
 (*Get a results list. Will assume conn list for combining bools of predicate list is complete*)
 let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
-  let predStr= string_of_predicate pred in 
+   
 
   match indexedRules with
     [] -> ([Interpreter.eval_predicate (RuleList([])) pred avlist]) |
 
     (i,curRule)::remainingRuleList -> 
       (
-	  if (isInBlackList indexedRules blacklist i predStr (ProjCommon.onlyVarsInPred pred)) then 
+	  if (isInBlackList indexedRules blacklist i pred) then 
 ([ (false, []) ]) else
 
        match curRule with 
@@ -126,8 +134,8 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
 		      	None -> (getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) |
 		       	Some sig0 ->
 
-		(*Debug here*)
-		printDebug indexedRules usedRules sig0 pred avlist blacklist;		
+		(*Debug here
+		printDebug indexedRules usedRules sig0 pred avlist blacklist;	*)	
 
 	 (true, sig0)::(getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) ) |
 	 
@@ -159,7 +167,7 @@ let newBlackList= addToBlackList blacklist i predStr in
 
 
 
-				       resList4CurRule @ (getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avoidList newBlackList)
+				       resList4CurRule @ (getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist newBlackList)
 
 				       
 
@@ -204,7 +212,9 @@ Query(predList, connList) ->
 	
 	getAllSol4Pred indexedRules [] singlePred avlist blacklist) |
 
-    fstPred::predTailList ->  
+    fstPred::predTailList ->  (
+	print_string ("It is multiple preds: fst one is "^(ProjCommon.string_of_predicate fstPred));
+
 	 let fstPredResultList = ( getAllSol4Pred indexedRules [] fstPred avlist blacklist) in  
 
 
@@ -215,8 +225,10 @@ printResultList fstPredResultList;
 let _= (read_line ()) in
 
  
-        (applyFirstResultToPredList fstPred fstPredResultList predTailList connList indexedRules lastBool avlist blacklist) ) 
+        (applyFirstResultToPredList fstPred fstPredResultList predTailList connList indexedRules lastBool avlist blacklist)
+)
 
+) 
 )
 
 
@@ -240,7 +252,7 @@ print_string ("OLD PredList is "^ (ProjCommon.stringOfPredList tailPredList (Lis
 print_string ("NEW PredList is "^ (ProjCommon.stringOfPredList newTailPredList (List.tl connList))^"\n");
 print_string ("Index rules are "^(ProjCommon.stringOfIndexedRules indexedRules));
 
-let _= (read_line ()) in
+
 
 
 	   let newLastBool= (match connList with
@@ -249,9 +261,20 @@ let _= (read_line ()) in
 		_ -> (raise (Failure "unknown connective."))) in
 
 
+print_string ("\nnew last bool is " ^ (string_of_bool newLastBool));
+print_string ("\nnew query is "^(ProjCommon.stringOfPredList newTailPredList (List.tl connList)));
+
 
 	 let allResults4FirstResult = (getAllSol indexedRules (Query(newTailPredList, List.tl connList)) newLastBool avlist blacklist)
-	 in match remainingFstResultList with
+
+	 in
+
+
+print_string ("all results for first result is:\n ");
+printResultList allResults4FirstResult;
+let _= (read_line ()) in
+
+ match remainingFstResultList with
 		[] -> allResults4FirstResult | 
 		
 		_ -> (allResults4FirstResult @

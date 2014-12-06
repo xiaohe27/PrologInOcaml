@@ -306,6 +306,22 @@ and onlyVarsInTermList tl =
 		CompoundTerm _ -> false |
             	ListTerm _ -> false |
 	    	PredAsTerm pred0 -> onlyVarsInPred pred0);;
+
+
+(* Test whether a string str1 contains another string str2 *)
+let rec strContains str1 str2 =
+if str1=str2 then true 
+else (
+let len1=String.length str1 in
+let len2=String.length str2 in 
+if len1 <= len2 then false 
+else 
+let sub1 = String.sub str1 0 (len2) in 
+if sub1 = str2 then true 
+else
+let remain1= String.sub str1 1 (len1 - 1) in 
+strContains remain1 str2
+);; 
 			
 
 
