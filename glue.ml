@@ -81,6 +81,7 @@ let printResult result = match result with
 let rec printResultList resultList =
 	match (rmFalseResult resultList) with  
 	[] -> print_string "false\n" |
+	[singleResult] -> printResult singleResult |
 	curResult::tail -> (printResult curResult; print_string " ; \n"; printResultList tail)
 
 and rmFalseResult resultList =
