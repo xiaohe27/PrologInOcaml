@@ -28,8 +28,6 @@ print_string (ProjCommon.stringOfBlackList blacklist);
 
 print_string "\n\n";
 
-(* let _=read_line () in 
-() *)
 ;;
 
 
@@ -62,6 +60,7 @@ let rec getClauseWithIndex indexedRules i =
 				else getClauseWithIndex tail i )
 ;;
 
+
 (*check whether a given str is in the black list of a rule*)
 let rec isInBlackList indexedRules blacklist i pred =
 	let predStr= string_of_predicate pred in 
@@ -80,17 +79,21 @@ let rec isInBlackList indexedRules blacklist i pred =
 				Fact hp -> hp |
 				Rule (headPred,_) -> headPred ) in
 		
-		let bresult=(ProjCommon.onlyVarsInPred headI) in
-		print_string ("head is "^(string_of_predicate headI)^", and it is all vars? " ^ (string_of_bool bresult) ^"\n"); bresult )
+		ProjCommon.onlyVarsInPred headI) 
+		
 
 	) in (
 		if isHeadPredAllVars && isPredAllVars 
-	then (print_string ("both head and query are pure vars.\n"); true)
+		then (true)
 		else  		
 	 	(if occursIn predStr listI then true else(
+				
+		if (ProjCommon.onlyConstInPred pred) then (false)
+		else(		
 		let constPart=(ProjCommon.getAllConstInPred pred) in
+				
 		let foundInBlist=(ProjCommon.isContainedInOneStrInTheList listI constPart) in 
-		foundInBlist
+		foundInBlist)
 		) 
 
 		)
@@ -135,8 +138,7 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
 		      	None -> (getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) |
 		       	Some sig0 ->
 
-		(*Debug here
-		printDebug indexedRules usedRules sig0 pred avlist blacklist;	*)	
+			
 
 	 (true, sig0)::(getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) ) |
 	 
@@ -150,8 +152,6 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
 			Some sig0 -> ( 
 
 
-		(*Debug here
-		printDebug indexedRules usedRules sig0 pred avlist blacklist;	*)	
 
 let newBlackList= addToBlackList blacklist i (ProjCommon.string_of_predicate pred) in
 
@@ -206,22 +206,14 @@ Query(predList, connList) ->
   ( match predList with
     [] -> ((raise (Failure "Query is empty!"))) |
     [singlePred] -> (
-	print_string "It is a single Pred!\n";
 	
 	getAllSol4Pred indexedRules [] singlePred avlist blacklist) |
 
-    fstPred::predTailList ->  (
-	print_string ("It is multiple preds: fst one is "^(ProjCommon.string_of_predicate fstPred));
+    fstPred::predTailList ->  (	
 
 	 let fstPredResultList = ( getAllSol4Pred indexedRules [] fstPred avlist blacklist) in  
 
 
-print_string ("Fst pred is "^ (ProjCommon.string_of_predicate fstPred)^"\n");
-print_string ("PredList is "^ (ProjCommon.stringOfPredList predTailList (List.tl connList))^"\n");
-print_string("LOOK AT HERE: first Pred's result list is:\n");
-printResultList fstPredResultList;
-
- 
         (applyFirstResultToPredList fstPred fstPredResultList predTailList connList indexedRules lastBool avlist blacklist)
 )
 
@@ -245,21 +237,11 @@ and applyFirstResultToPredList fstPred fstPredResultList tailPredList connList i
 
 
 
-print_string ("OLD PredList is "^ (ProjCommon.stringOfPredList tailPredList (List.tl connList))^"\n");
-print_string ("NEW PredList is "^ (ProjCommon.stringOfPredList newTailPredList (List.tl connList))^"\n");
-print_string ("Index rules are "^(ProjCommon.stringOfIndexedRules indexedRules));
-
-
-
-
 	   let newLastBool= (match connList with
 		","::_ -> (bool1 && lastBool) |
 		";"::_ -> (bool1 || lastBool) |
 		_ -> (raise (Failure "unknown connective."))) in
 
-
-print_string ("\nnew last bool is " ^ (string_of_bool newLastBool));
-print_string ("\nnew query is "^(ProjCommon.stringOfPredList newTailPredList (List.tl connList)));
 
 
 	 let allResults4FirstResult =
@@ -268,14 +250,11 @@ print_string ("\nnew query is "^(ProjCommon.stringOfPredList newTailPredList (Li
 	 in
 
 
-print_string ("all results for first result is:\n ");
-printResultList allResults4FirstResult;
-
  match remainingFstResultList with
 		[] -> allResults4FirstResult | 
 		
 		_ -> (allResults4FirstResult @
-			(applyFirstResultToPredList fstPred remainingFstResultList tailPredList connList indexedRules lastBool avlist 		blacklist))	
+			(applyFirstResultToPredList fstPred remainingFstResultList tailPredList connList indexedRules lastBool avlist blacklist))	
 	)
 
   

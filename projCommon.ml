@@ -307,6 +307,24 @@ and onlyVarsInTermList tl =
             	ListTerm _ -> false |
 	    	PredAsTerm pred0 -> onlyVarsInPred pred0);;
 
+let rec onlyConstInPred pred =
+	match pred with
+	Identifier id -> (true) |
+	Predicate (f,termL) -> (onlyConstInTermList termL) |
+	VarAsPred v -> (false)
+ 
+and onlyConstInTermList tl =
+	match tl with
+	[] -> true |
+	t1::tail -> (
+		match t1 with
+		Var v -> (false) | 
+		ConstTerm _ -> true |
+		CompoundTerm _ -> true |
+            	ListTerm _ -> true |
+	    	PredAsTerm pred0 -> onlyConstInPred pred0);;
+
+
 
 (* Test whether a string str1 contains another string str2 *)
 let rec strContains str1 str2 =
