@@ -139,6 +139,21 @@ let rec stringOfIndexedRules indexRules =
 				("\n" ^ stringOfIndexedRules tail)) ;;
 
 
+let rec string_of_stringList strList =
+ match strList with
+	[] -> "" |
+	str::tail -> str ^ ";" ^(string_of_stringList tail);;
+
+let rec stringOfBlackList blist =
+    match blist with
+	[] -> "" |
+	(n, sl)::(tail) ->
+	("(" ^ (string_of_int n) ^ (",") ^(string_of_stringList sl)^")" )
+	^";\n"^(stringOfBlackList tail)
+;;
+
+
+
 (* Fresh Name stuff *)
 
 let int_to_string n =

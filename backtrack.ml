@@ -6,6 +6,33 @@ open Evaluator
 open Interpreter
 
 
+(*Debugger*)
+let rec printDebug indexedRules usedRules sigma pred avlist blacklist =
+print_string "\nCur rules:\n";
+print_string (ProjCommon.stringOfIndexedRules indexedRules);
+
+print_string "\nUsed rules:\n";
+print_string (ProjCommon.stringOfIndexedRules usedRules);
+
+print_string "\nSigma:\n";
+print_string (ProjCommon.string_of_subst sigma);
+
+print_string "\nCur pred is:\n";
+print_string (ProjCommon.string_of_predicate pred);
+
+print_string "\nAvoid list is:\n";
+print_string (ProjCommon.string_of_stringList avlist);
+
+print_string "\nBlacklist is:\n";
+print_string (ProjCommon.stringOfBlackList blacklist);
+
+print_string "\n\n";
+
+(* let _=read_line () in 
+() *)
+;;
+
+
 (* print result *)
 let rec printResultList resultList =
 	match resultList with  
@@ -76,6 +103,8 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
 		      	None -> (getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) |
 		       	Some sig0 ->
 
+		(*Debug here
+		printDebug indexedRules usedRules sig0 pred avlist blacklist;	*)	
 
 	 (true, sig0)::(getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) ) |
 	 
@@ -89,6 +118,8 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
 			Some sig0 -> ( 
 
 
+		(*Debug here
+		printDebug indexedRules usedRules sig0 pred avlist blacklist;	*)	
 
 let newBlackList= addToBlackList blacklist i predStr in
 
@@ -100,12 +131,12 @@ let newBlackList= addToBlackList blacklist i predStr in
 
 
 				       let resList4CurRule = 
-					getResultListByApplyingSig (getAllSol (usedRules @ indexedRules) bodyQuery true avlist
+					getResultListByApplyingSig (getAllSol (usedRules @ indexedRules) bodyQuery true avoidList
 					newBlackList) sig0 in
 
 
 
-				       resList4CurRule @ (getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist newBlackList)
+				       resList4CurRule @ (getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avoidList newBlackList)
 
 				       
 
@@ -117,7 +148,13 @@ and getResultListByApplyingSig resList sigma =
 match resList with
   [] -> [] |
 
-  fstResult::tail -> (match fstResult with 
+  fstResult::tail -> (
+
+(* print_string("NB: first result is:");
+printResult fstResult;
+let _= (read_line ()) in *)
+
+		      match fstResult with 
 		      (false,_) -> (getResultListByApplyingSig tail sigma) |
 		      (true, fstSig) -> (match (Unify.composeSubst fstSig sigma) with
 					        None -> (true, [])::(getResultListByApplyingSig tail sigma) |
@@ -139,9 +176,22 @@ match query with
 Query(predList, connList) -> 
   ( match predList with
     [] -> ((raise (Failure "Query is empty!"))) |
-    [singlePred] -> (getAllSol4Pred indexedRules [] singlePred avlist blacklist) |
+    [singlePred] -> (
+	print_string "It is a single Pred!\n";
+	
+	getAllSol4Pred indexedRules [] singlePred avlist blacklist) |
+
     fstPred::predTailList ->  
-	 let fstPredResultList = ( getAllSol4Pred indexedRules [] fstPred avlist blacklist) in   
+	 let fstPredResultList = ( getAllSol4Pred indexedRules [] fstPred avlist blacklist) in  
+
+
+print_string ("Fst pred is "^ (ProjCommon.string_of_predicate fstPred)^"\n");
+print_string ("PredList is "^ (ProjCommon.stringOfPredList predTailList (List.tl connList))^"\n");
+print_string("LOOK AT HERE: first Pred's result list is:\n");
+printResultList fstPredResultList;
+let _= (read_line ()) in
+
+ 
         (applyFirstResultToPredList fstPred fstPredResultList predTailList connList indexedRules lastBool avlist blacklist) ) 
 
 )
@@ -160,6 +210,15 @@ and applyFirstResultToPredList fstPred fstPredResultList tailPredList connList i
 	   let refinedSig= filter freeVarsInFstPred sig1 in
 
 	   let newTailPredList= List.map (substInPredicate refinedSig) tailPredList in
+
+
+
+print_string ("OLD PredList is "^ (ProjCommon.stringOfPredList tailPredList (List.tl connList))^"\n");
+print_string ("NEW PredList is "^ (ProjCommon.stringOfPredList newTailPredList (List.tl connList))^"\n");
+
+let _= (read_line ()) in
+
+
 	   let newLastBool= (match connList with
 		","::_ -> (bool1 && lastBool) |
 		";"::_ -> (bool1 || lastBool) |

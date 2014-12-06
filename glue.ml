@@ -111,6 +111,9 @@ let findAllResultsFromPgmStr pgmStr = let (indexedRules, query) = getIndexedRule
 
 let findAllResults pgm = let (indexedRules, query) = getIndexedRulesAndQueryFromPgm pgm in
 			    let resultList= Backtrack.getAllSol indexedRules query true [] [] in
+
+				print_string "\nOriginal result list is \n";
+				printResultList resultList;
 				
 				List.map (refineResult query) resultList
 				;;
