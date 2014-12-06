@@ -88,11 +88,12 @@ let rec isInBlackList indexedRules blacklist i pred =
 	then (print_string ("both head and query are pure vars.\n"); true)
 		else  		
 	 	(if occursIn predStr listI then true else(
-		let constPart=() in 
-		
+		let constPart=(ProjCommon.getAllConstInPred pred) in
+		let foundInBlist=(ProjCommon.isContainedInOneStrInTheList listI constPart) in 
+		foundInBlist
 		) 
 
-	)
+		)
 	)
 
 and getItemWithIndexI blacklist i =
@@ -152,7 +153,7 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
 		(*Debug here
 		printDebug indexedRules usedRules sig0 pred avlist blacklist;	*)	
 
-let newBlackList= addToBlackList blacklist i predStr in
+let newBlackList= addToBlackList blacklist i (ProjCommon.string_of_predicate pred) in
 
 				       let avoidList= Interpreter.getAVList sig0 @ avlist in
 				       let renamedBody= Interpreter.renameFreeVarsInClause avoidList curRule in
@@ -181,9 +182,6 @@ match resList with
 
   fstResult::tail -> (
 
-(* print_string("NB: first result is:");
-printResult fstResult;
-let _= (read_line ()) in *)
 
 		      match fstResult with 
 		      (false,_) -> (getResultListByApplyingSig tail sigma) |
@@ -222,7 +220,6 @@ print_string ("Fst pred is "^ (ProjCommon.string_of_predicate fstPred)^"\n");
 print_string ("PredList is "^ (ProjCommon.stringOfPredList predTailList (List.tl connList))^"\n");
 print_string("LOOK AT HERE: first Pred's result list is:\n");
 printResultList fstPredResultList;
-let _= (read_line ()) in
 
  
         (applyFirstResultToPredList fstPred fstPredResultList predTailList connList indexedRules lastBool avlist blacklist)
@@ -265,14 +262,14 @@ print_string ("\nnew last bool is " ^ (string_of_bool newLastBool));
 print_string ("\nnew query is "^(ProjCommon.stringOfPredList newTailPredList (List.tl connList)));
 
 
-	 let allResults4FirstResult = (getAllSol indexedRules (Query(newTailPredList, List.tl connList)) newLastBool avlist blacklist)
+	 let allResults4FirstResult =
+	ProjCommon.addSigToResultList sig1 (getAllSol indexedRules (Query(newTailPredList, List.tl connList)) newLastBool avlist blacklist)
 
 	 in
 
 
 print_string ("all results for first result is:\n ");
 printResultList allResults4FirstResult;
-let _= (read_line ()) in
 
  match remainingFstResultList with
 		[] -> allResults4FirstResult | 

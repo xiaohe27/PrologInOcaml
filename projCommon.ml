@@ -324,6 +324,60 @@ strContains remain1 str2
 );; 
 			
 
+let rec isAllTrueBoolList boolList=
+match boolList with
+[] -> true |
+curBool::tail -> 
+(if curBool = false then false
+else (isAllTrueBoolList tail))
+;; 
+
+
+let rec getAllConstInTermList tl =
+match tl with
+[] -> [] |
+
+curTerm::tail -> 
+(match curTerm with
+		Var v -> getAllConstInTermList tail | 
+		PredAsTerm pred0 -> getAllConstInTermList tail |
+		_ -> curTerm::(getAllConstInTermList tail) 		
+	    	
+)
+;;
+
+let getAllConstInPred pred=
+match pred with
+	Identifier _ -> [] |
+	Predicate (_,termL) -> (getAllConstInTermList termL) |
+	VarAsPred _ -> []
+
+
+(*Given a string list of items in blacklist, 
+test whether all the constant terms in constTL 
+occur in one entry of the list*)
+let rec isContainedInOneStrInTheList strList constTL =
+match strList with
+[] -> false |
+curStr::tail -> (
+if (areFoundInOneStr constTL curStr)
+then (true)
+else (isContainedInOneStrInTheList tail constTL)
+) 
+
+and areFoundInOneStr constTL str=
+let listOfTermStr= List.map (string_of_term) constTL in
+let occursCheckList= List.map (strContains str) listOfTermStr in
+isAllTrueBoolList occursCheckList
+;;
+
+
+let addSigToResult sigma result =
+match result with
+(b,subst) -> (b, sigma @ subst);;
+
+let addSigToResultList sigma rl =
+List.map (addSigToResult sigma) rl;;
 
 
 
