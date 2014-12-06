@@ -263,7 +263,7 @@ print_string ("\nnew query is "^(ProjCommon.stringOfPredList newTailPredList (Li
 
 
 	 let allResults4FirstResult =
-	ProjCommon.addSigToResultList sig1 (getAllSol indexedRules (Query(newTailPredList, List.tl connList)) newLastBool avlist blacklist)
+	ProjCommon.addSigToResultList refinedSig (getAllSol indexedRules (Query(newTailPredList, List.tl connList)) newLastBool avlist blacklist)
 
 	 in
 
