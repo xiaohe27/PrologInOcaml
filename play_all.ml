@@ -38,7 +38,7 @@ let _ =
 
 	let resultList= (Glue.findAllResults newPgm) in 
 	let _=	printResultList resultList in
-	match parsedPgm with 
+	match newPgm with 
 	Prog(newRules, _) -> (loop newRules) |
 	ProgFromQuery(_) -> (loop rules)  		
 
