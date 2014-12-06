@@ -55,14 +55,37 @@ let rec getIndexedRulesHelper rules curIndex = (
 
 let getIndexedRules rules = getIndexedRulesHelper rules 0;;
 
+let rec getClauseWithIndex indexedRules i =
+   match indexedRules with
+	[] -> None |
+	(index,clause)::tail -> (if index=i then Some clause
+				else getClauseWithIndex tail i )
+;;
 
 (*check whether a given str is in the black list of a rule*)
-let rec isInBlackList blacklist i predStr =
+let rec isInBlackList indexedRules blacklist i predStr isPredAllVars =
 	match (getItemWithIndexI blacklist i) with
 	None -> false |
 	Some listI ->
- 
-	 (if occursIn predStr listI then true else false)
+ 	 let isHeadPredAllVars = 
+	(
+		 match  (getClauseWithIndex indexedRules i) 
+	with     None -> (raise (Failure ("Rule " ^ (string_of_int i) ^ " is not in the knowledge base.")))
+		
+	|	Some ruleI -> (
+	        let headI = (match ruleI with
+				Fact hp -> hp |
+				Rule (headPred,_) -> headPred ) in
+		
+		let bresult=(ProjCommon.onlyVarsInPred headI) in
+		print_string ("head is "^(string_of_predicate headI)^", and it is all vars? " ^ (string_of_bool bresult) ^"\n"); bresult )
+
+	) in (
+		if isHeadPredAllVars && isPredAllVars 
+	then (print_string ("both head and query are pure vars.\n"); true)
+		else  		
+	 	(if occursIn predStr listI then true else false)
+	)
 
 and getItemWithIndexI blacklist i =
 match blacklist with 
@@ -93,7 +116,7 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
 
     (i,curRule)::remainingRuleList -> 
       (
-	  if (isInBlackList blacklist i predStr) then 
+	  if (isInBlackList indexedRules blacklist i predStr (ProjCommon.onlyVarsInPred pred)) then 
 (getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) else
 
        match curRule with 
@@ -103,8 +126,8 @@ let rec getAllSol4Pred indexedRules usedRules pred avlist blacklist =
 		      	None -> (getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) |
 		       	Some sig0 ->
 
-		(*Debug here
-		printDebug indexedRules usedRules sig0 pred avlist blacklist;	*)	
+		(*Debug here*)
+		printDebug indexedRules usedRules sig0 pred avlist blacklist;		
 
 	 (true, sig0)::(getAllSol4Pred remainingRuleList (usedRules @ [(i,curRule)]) pred avlist blacklist) ) |
 	 
@@ -215,6 +238,7 @@ and applyFirstResultToPredList fstPred fstPredResultList tailPredList connList i
 
 print_string ("OLD PredList is "^ (ProjCommon.stringOfPredList tailPredList (List.tl connList))^"\n");
 print_string ("NEW PredList is "^ (ProjCommon.stringOfPredList newTailPredList (List.tl connList))^"\n");
+print_string ("Index rules are "^(ProjCommon.stringOfIndexedRules indexedRules));
 
 let _= (read_line ()) in
 

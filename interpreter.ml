@@ -36,9 +36,10 @@ let rec renameFreeVarsInClause avoidList clause =
 	       let subst4Fresh= genSubst4Fresh freeVarsInBody genFreshVars in 
 	       ( 
 
+(*
 		print_string ("Before renaming, clause is "^(ProjCommon.string_of_clause clause));
 		print_string ("After renaming, pred list is "^(ProjCommon.stringOfPredList 
-		(List.map (Unify.substInPredicate subst4Fresh) body) connList)^"\n");
+		(List.map (Unify.substInPredicate subst4Fresh) body) connList)^"\n");   *)
 
 		List.map (Unify.substInPredicate subst4Fresh) body)  
 	         )

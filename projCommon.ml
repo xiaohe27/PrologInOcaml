@@ -287,3 +287,43 @@ let retBool op = match op with
 let isBuiltInOp op = if (isTypeTesting op) then true 
                       else if (op = "=" || op = "is" || op = "write"
 		               || op = "nl" ) then true else (retBool op);; 
+
+
+(* Test whether a predicate only contains vars in the term list *)
+let rec onlyVarsInPred pred =
+	match pred with
+	Identifier id -> (false) |
+	Predicate (f,termL) -> (onlyVarsInTermList termL) |
+	VarAsPred v -> (true)
+ 
+and onlyVarsInTermList tl =
+	match tl with
+	[] -> true |
+	t1::tail -> (
+		match t1 with
+		Var v -> (onlyVarsInTermList tail) | 
+		ConstTerm _ -> false |
+		CompoundTerm _ -> false |
+            	ListTerm _ -> false |
+	    	PredAsTerm pred0 -> onlyVarsInPred pred0);;
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
