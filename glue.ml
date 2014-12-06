@@ -95,6 +95,30 @@ let refineResult query result = let outputSig= (let freeVarsInQ= ProjCommon.free
 						Interpreter.filter freeVarsInQ (snd result) ) 
 				in (fst result, outputSig);;
 
+
+(*Print the result of the result list one by one, simulating prolog's behavior. But not get the result on the fly*)
+let rec printResultOneByOne resList =
+let newList= rmFalseResult resList in
+match newList with
+[] -> (print_string "false\n";) |
+
+_ -> (printResOneByOneHelper newList)
+
+and printResOneByOneHelper resList=
+match resList with
+[] -> () |
+[single] -> (print_string (ProjCommon.string_of_subst (snd single) ^ "\n"); ) |
+curResult::tail -> (print_string (ProjCommon.string_of_subst (snd curResult));
+
+let decision= (flush stdout ; read_line ()) in
+if decision = ";" || decision = " " 
+then
+(print_string "\n";flush stdout; printResOneByOneHelper tail)
+else ()
+
+)
+;;
+
 (* A user-friendly way of simulating prolog program: pretty print the result. *)
 let simulateProgram pgmStr =
                                    let pgm = parseProgram pgmStr in
