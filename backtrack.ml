@@ -37,9 +37,12 @@ let rec printResultList resultList =
 	[] -> () |
 	curResult::tail -> (printResult curResult; printResultList tail)
 
-and printResult result = match result with
-                          (b,sigma) -> (			   			    
-			    print_string ("\n"^ (string_of_bool b) ^ ".\n" ^ (ProjCommon.string_of_subst sigma) ^ "\n");) ;;
+and printResult result =
+match result with
+(b,sigma) -> (
+if b=false then () 
+else		   			    
+(print_string ((ProjCommon.string_of_subst sigma) ^ "\n");) ) ;;
 
 
 
@@ -251,7 +254,7 @@ and applyFirstResultToPredList fstPred fstPredResultList tailPredList connList i
 
 	 in
 
-
+ 
  match remainingFstResultList with
 		[] -> allResults4FirstResult | 
 		

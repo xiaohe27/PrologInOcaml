@@ -38,7 +38,7 @@ let _ =
 
 	let result= Glue.refineResult (Glue.getQueryFromPgm newPgm) (Glue.execProgram newPgm) in 
 	let _=	printResult result in
-	match parsedPgm with 
+	match newPgm with 
 	Prog(newRules, _) -> (loop newRules) |
 	ProgFromQuery(_) -> (loop rules)  		
 

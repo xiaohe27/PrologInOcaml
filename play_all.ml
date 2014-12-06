@@ -37,8 +37,8 @@ let _ =
 	ProgFromQuery(query) -> (Prog(rules,query))  ) in
 
 	let resultList= (Glue.findAllResults newPgm) in 
-	let _=	printResultList resultList in
-	match parsedPgm with 
+	let _=	Glue.printResultOneByOne resultList in
+	match newPgm with 
 	Prog(newRules, _) -> (loop newRules) |
 	ProgFromQuery(_) -> (loop rules)  		
 
