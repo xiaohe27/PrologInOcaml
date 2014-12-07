@@ -74,7 +74,7 @@ let printResult result = match result with
 				if sigma = [] then			   			    
 			    (print_string ("\n"^ (string_of_bool b) ^ ".\n");)
 				else if (b) then(
-			    print_string ((ProjCommon.string_of_subst sigma) ^ "\n");)
+			    print_string ((ProjCommon.string_of_subst sigma) ^ ".\n");)
 				else (print_string "false\n";)
 				 ) ;;
 
@@ -107,8 +107,8 @@ _ -> (printResOneByOneHelper newList)
 and printResOneByOneHelper resList=
 match resList with
 [] -> () |
-[single] -> (print_string (ProjCommon.string_of_subst (snd single) ^ "\n"); ) |
-curResult::tail -> (print_string (ProjCommon.string_of_subst (snd curResult));
+[single] -> (printResult single) |
+curResult::tail -> ((printResult curResult);
 
 let decision= (flush stdout ; read_line ()) in
 if decision = ";" || decision = " " 
