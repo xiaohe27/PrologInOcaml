@@ -28,7 +28,7 @@ let _ =
 
 	(try 
 	
-	let parsedPgm= Parser.program Lexer.token lexbuf in
+	let parsedPgm= Glue.addCommaToPgm(Parser.program Lexer.token lexbuf) in
 	let RuleList(existingRules)= rules in
 	let newPgm=(match parsedPgm with 
 	Prog(RuleList(curRules), query) -> 
