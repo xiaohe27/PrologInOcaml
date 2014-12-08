@@ -52,6 +52,7 @@ atomic_term:
   | STRING					{ ConstTerm(StringConst $1) }
   | BOOL					{ ConstTerm(BoolConst $1) } 
   | LPAREN term RPAREN  	{ $2 } 
+  | list_term					{ $1 }
 
 compound_term_1:
   |atomic_term			{ $1 }
@@ -114,7 +115,7 @@ list_term:
 | LBRACKET term_list RBRACKET		{ ListTerm $2 }
 
 term:
-| list_term					{ $1 }
+
 | compound_term				{ $1 }
 | NAME LPAREN term_list RPAREN 	{ PredAsTerm (Predicate ($1,$3)) }
 | NOT LPAREN term RPAREN		{ PredAsTerm (Predicate ("not",[$3])) }
