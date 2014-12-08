@@ -29,8 +29,8 @@ let open_comment = "(*"
 let close_comment = "*)"
 
 rule token = parse
-| eof				{ EOF }
-| whitespace			{ token lexbuf }
+| eof							{ EOF }
+| whitespace					{ token lexbuf }
 |"not"                          { NOT } (* boolean negation *)
 |"=:="                          { ARITH_EQ } (* arithmetical equality *)
 |"=\\="                         { ARITH_INEQ } (* arithmetical inequality *)
@@ -38,11 +38,11 @@ rule token = parse
 |"\\="                          { TERM_NOTUNIFY } (* terms do not unify *)
 |"=.."                          { TERM_DECOMP } (* term composition/decomposition *)
 |"=="                           { TERM_EQ } (* term equality *)
-|"\\=="                           { TERM_INEQ } (* term inequality *)
+|"\\=="                         { TERM_INEQ } (* term inequality *)
 |"@=<"                          { TERM_ORDER_LEQ } (* term less or equal to (order of terms) *)
 |"@>="                          { TERM_ORDER_GEQ } (* term greater or equal to (order of terms) *)
-|"=@="                           { TERM_ORDER_EQ } (* term equality (order of terms) *)
-|"\\=@="                         { TERM_ORDER_INEQ } (* term inequality (order of terms) *)
+|"=@="                          { TERM_ORDER_EQ }  (* term equality (order of terms) *)
+|"\\=@="                        { TERM_ORDER_INEQ } (* term inequality (order of terms) *)
 |"@<"                           { TERM_ORDER_LESS } (* term less than (order of terms) *)
 |"@>"                           { TERM_ORDER_GREATER } (* term greater than (order of terms) *)
 |">="                           { ARITH_GEQ } (* arithmetical greater or equal to *)
@@ -71,23 +71,23 @@ rule token = parse
 |"["                            { LBRACKET } (* left bracket for lists *)
 |"]"                            { RBRACKET } (* right bracket for lists *)
 |"|"                            { PIPE } (* head-tail delimiter for lists *)
-| ".."				{ DOUBLEDOT }
-| "."				{ DOT }
- |"%"[^'\n']* 		{ token lexbuf }
-  | open_comment		{ comment 1 lexbuf }
-  | close_comment 		{ raise (Failure "unmatched closed comment") }
-| '"' {stringToken "" lexbuf}
-| "'" {singleStringToken "'" lexbuf}
-| name as id			{ NAME (id) }
-| int      { INT (int_of_string (Lexing.lexeme lexbuf)) }
-| float    { FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
-| variable			{ VARIABLE (Lexing.lexeme lexbuf) }
+| ".."							{ DOUBLEDOT }
+| "."							{ DOT }
+|"%"[^'\n']* 					{ token lexbuf }
+| open_comment					{ comment 1 lexbuf }
+| close_comment 				{ raise (Failure "unmatched closed comment") }
+| '"' 							{stringToken "" lexbuf}
+| "'" 							{singleStringToken "'" lexbuf}
+| name as id					{ NAME (id) }
+| int      						{ INT (int_of_string (Lexing.lexeme lexbuf)) }
+| float  					 	{ FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
+| variable						{ VARIABLE (Lexing.lexeme lexbuf) }
 
 and comment depth = parse
-open_comment	{ comment (depth+1) lexbuf }
-| close_comment { if depth = 1 then token lexbuf else comment (depth - 1) lexbuf }
-| eof		{ raise (Failure "unmatched open comment") }
-| _		{ comment depth lexbuf }
+open_comment		{ comment (depth+1) lexbuf }
+| close_comment		{ if depth = 1 then token lexbuf else comment (depth - 1) lexbuf }
+| eof				{ raise (Failure "unmatched open comment") }
+| _					{ comment depth lexbuf }
 
 and stringToken content = parse
   | eof {raise (Failure "unexpected end of file")}
@@ -118,7 +118,7 @@ and stringToken content = parse
 	   let newContent= content ^ (String.make 1 (char_of_int n))
 	       in stringToken newContent lexbuf } 
 	       
-| [^'"']+ as pstr {let newContent= content ^ pstr in stringToken newContent lexbuf}
+  | [^'"']+ as pstr {let newContent= content ^ pstr in stringToken newContent lexbuf}
 
 and singleStringToken content = parse
   | eof {raise (Failure "unexpected end of file")}
@@ -149,7 +149,7 @@ and singleStringToken content = parse
 	   let newContent= content ^ (String.make 1 (char_of_int n))
 	       in singleStringToken newContent lexbuf } 
 	       
- | [^''']+ as pstr {let newContent= content ^ pstr in singleStringToken newContent lexbuf}
+  | [^''']+ as pstr {let newContent= content ^ pstr in singleStringToken newContent lexbuf}
 
 
 {(* do not modify this function: *)
