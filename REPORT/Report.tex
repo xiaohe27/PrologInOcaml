@@ -4,6 +4,7 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
+\usepackage{listings}
 \author{He Xiao, Shijiao Yuwen}
 \title{Prolog in Ocaml}
 \begin{document}
@@ -19,9 +20,11 @@
 \end{abstract}
 
 \section*{Grammar}
-
+\input{gramma}
 
 \section*{Lexing and Parsing}
+\input{lexing}
+\input{parsing}
 
 \section*{Interpreting}
 
@@ -69,5 +72,6 @@ In order to pass some certain tests, several built-in functions (such as `write'
 
 \section*{Appendix}
 
+\lstinputlisting[caption={Data Structures}, label={Types in Ocaml representing program constructs of Prolog}, firstline=2, lastline=27]{../projCommon.ml}
 
 \end{document}
