@@ -115,11 +115,9 @@ list_term:
 | LBRACKET term_list RBRACKET		{ ListTerm $2 }
 
 term:
-
 | compound_term				{ $1 }
 | NAME LPAREN term_list RPAREN 	{ PredAsTerm (Predicate ($1,$3)) }
 | NOT LPAREN term RPAREN		{ PredAsTerm (Predicate ("not",[$3])) }
-/*| predicate					{ PredAsTerm $1 }*/
 
 predicate_list:
 | predicate								{ ([$1],[]) }
