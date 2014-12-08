@@ -27,6 +27,21 @@
 \input{parsing}
 
 \section*{Interpreting}
+There are two preliminary functions involved in developing interpretation module. The first one is evaluation function for terms and the second one is for predicates.\\
+
+In order to process the terms universally, a general value type is defined which covers all the primitive data types, namely `int', `float', `bool',`string',`list'. A constant term will be evaluated to its primitive value; A compound term which represents arithmetic operations or boolean logical operations will be simplified to a single value. A thing needs to be mentioned is that in standard Prolog, arithmetic operations like $+,-,*,/$ are overloaded, i.e. for both integer operations and floating point operations, the same operator symbol is used for each kind of operation. In order to handle this, both operands are converted to floating point numbers before doing computation if the two operands in a binary arithmetic operation have different precision levels. For $ListTerm$, each term inside the list will be evaluated and the values will be used to compose a value list. For variables terms, there is no way of evaluating an uninstantiated variable: there is no memory concept, variables are eliminated through substitution; as a result, if a variable is still a variable when doing the evaluation, it will never get any value and an exception will be thrown.
+\bigskip
+The other fundamental function is created for evaluating a predicate to either true or false. Again, the evaluation is performed through structural induction. At first, the predicate name will be checked, if it is one of the supported built-in function, then it will be interpreted in the `built-in' way. Interestingly, there exists an overlap between predicates and some proportion of compound terms: the binary boolean operators which return boolean values. For these things, their identities depend on the context in which they are evaluated. If the name of the predicate cannot be found in the built-in functions list, then the predicate will be passed to another function which will traverse the rules list to seek a match. In the case that some rule's head can be unified with the query predicate, then the body of the rule will be evaluated, and the final boolean result depends on the result of evaluating that body predicates. 
+
+\bigskip
+\subsection*{Algorithms For the Interpretation}
+Input: a Prolog program consisting of a bunch of clauses and a query. \\
+
+Output: the first result for the query, and its corresponding substitution. \\
+
+S0: decompose the program to two parts: clause (either fact or rule) list and one query.  \\
+
+S1: decompose the Query to a list of predicates.
 
 
 
