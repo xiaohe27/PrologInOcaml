@@ -44,11 +44,44 @@ The other fundamental function is created for evaluating a predicate to either t
 	
 	\begin{algorithmic}
 		\State Input: single predicate, rules
-		\State Output: true / false
+		\State Output: (true / false, substitution)
 		
 		\Function{eval\_predicate}{$rules$,$predicate$}
+			\If{$predicate$ is built-in}
+				\State evaluate $predicate$ accordingly
+				\State \Return (evaluatedResult,[])
 			
-			\State \Return true
+			\Else
+				\State \Return EVAL\_PRED\_WITH\_RULES ($rules$, $predicate$)
+			\EndIf
+			
+		\EndFunction
+		
+		\Function{eval\_pred\_with\_rules}{$rules$, $predicate$}
+			\For{each clause $i$ in the rule list} 
+				\If{$predicate$ unifiable with rule $i$'s head}
+					\State get substitution $sigma$ from the unification
+					\If {rule $i$ is a fact}
+						\State \Return (true, $sigma$)	
+						
+					\Else
+						\State Apply $sigma$ to the body of the rule (rename free vars if needed)
+						\State Get the new query $q$
+						\State Evaluate $q$ and get result $(b,sig2)$
+						
+						\If {$b$ is true}
+							\State get final substitution $finalSig$ by composing $sig2$ and $sigma$
+							\State \Return (true, $finalSig$)
+							
+						\Else
+							\State continue, apply the next rule if possible
+						\EndIf				
+					\EndIf
+				\EndIf
+			\EndFor
+			
+			\State \Return (false,[])
+		
 		\EndFunction
 		
 	\end{algorithmic}
@@ -56,17 +89,18 @@ The other fundamental function is created for evaluating a predicate to either t
 \end{algorithm}
 
 
+N.B. In the implementation, there might be some part realized in the situation where a rule's head can unify with the predicate but the rule does not fire due to the body part does not return true.
 
+\bigskip
+Big picture:
+Given a Prolog program consisting of a bunch of clauses and a query, our program is expected to
+output the first result for the query, and its corresponding substitution. \\
 
-Input: a Prolog program consisting of a bunch of clauses and a query. \\
+Our application will first decompose the program to two parts: clause (either fact or rule) list and one query. Then decompose the Query to a list of predicates, where each individual predicate can be evaluated via the above algorithm. \\
 
-Output: the first result for the query, and its corresponding substitution. \\
+The list of predicates in side the body part of a rule will be evaluated from left to right, and the list of predicates is left-associative. To help the computation of the final boolean result, a list of boolean connectives ($,$ or $;$ representing $\land$, $\lor$ respectively) is also provided by parser. Each time a predicate in the list obtains its result $(curBool,curSig)$, it will compute the new boolean value by applying the boolean operator (look up the top item in connective list) on the $lastBool$(the boolean result of previous predicate, which was computed by the last iteration) and $curBool$. After getting the $newBool$, it will pass it to the next iteration. The substitution $curSig$ will be used to update the remaining predicate list. \\
 
-S0: decompose the program to two parts: clause (either fact or rule) list and one query.  \\
-
-S1: decompose the Query to a list of predicates.
-
-
+After getting the new boolean and new predicate list, the recursion can begin.
 
 \section*{Backtracking}
 Rigorously speaking, the backtracking algorithm implemented in this project is not the same as the classical ones. It will backtrack silently and try to
@@ -75,28 +109,105 @@ gather all the results, but it will not print the result immediately when find s
 Currently, in the application which uses backtracking algorithm (\textbf{play\_all.exe}), only Horn clause is supported: i.e. the body of the rules as well as the query must be predicates connected via logical and operators (in Prolog, `,').\\ Furthermore, in order to avoid entering infinite loops, a list is maintained which records, for each rule, all the queries that have matched the head predicate of that rule in the past. It has both advantages and disadvantages after adding this feature: the good thing is it will not get lost in one branch while some other results can be found easily in other branch; the bad thing is that it may have false alarm so that it will miss some true results. In the evaluation part, we will demonstrate that in certain area, the advantage of our approach outweigh its drawbacks.\\
 
 \subsection*{Method for collecting all the results}
-
+Each time a predicate is evaluated, even if a true result can be obtained in some path, it does not return immediately. Instead, it will continue using remaining rules to try to obtain other results. All these results are combined to form the final result list for evaluating the predicate.\\
+To get all the results for a query with multiple predicates, the first predicate is first evaluated and we can get a list of results. For each result $(b,sig)$, we can use it to update the remaining predicate list and get a new query; then the result list for that branch can be obtained by consulting the updated query. The final result set is simply combining all the result lists in different branches. 
 
 
 \section*{Testing Results and Evaluation}
-In order to pass some certain tests, several built-in functions (such as `write', `nl' and most arithmetic and comparing functions) in Prolog are implemented, order than that, no built-in functions in Prolog are supported.
+In order to pass some certain tests, several built-in functions (such as `write', `nl' and most arithmetic and comparing functions) in Prolog are implemented, order than that, no built-in functions in Prolog are supported.\\
+
+The output format is simulating Prolog's. If no result is found, then a $false$ will be given.
+If multiple results are available, then the substitutions will be printed one by one if the user requires. If there is no substitution exists and the query succeeds, then a true will be given.
+
 \subsection*{Factorial}
-
-
-
-
+\begin{lstlisting}
+	factorial(0,1). 
+	factorial(N,F) :- 
+	N>0, N1 is N-1, factorial(N1,F1),
+	F is N * F1. 
+	
+	?- factorial(5,W).
+\end{lstlisting}
+Output:\\
+$W=120.$
 
 
 \subsection*{Hanoi}
+\begin{lstlisting}
+	 move(1,X,Y,_) :-  
+	 write('Move top disk from '), 
+	 write(X), 
+	 write(' to '), 
+	 write(Y), 
+	 nl. 
+	 move(N,X,Y,Z) :- 
+	 N>1, 
+	 M is N-1, 
+	 move(M,X,Z,Y), 
+	 move(1,X,Y,_), 
+	 move(M,Z,Y,X).  
+	 ?-  move(3,left,right,center). 
+\end{lstlisting}
 
-
+Output:
+\begin{lstlisting}
+	'Move top disk from 'left' to 'right
+	'Move top disk from 'left' to 'center
+	'Move top disk from 'right' to 'center
+	'Move top disk from 'left' to 'right
+	'Move top disk from 'center' to 'left
+	'Move top disk from 'center' to 'right
+	'Move top disk from 'left' to 'right
+	
+	true.
+\end{lstlisting}
 
 \subsection*{List Size}
+\begin{lstlisting}
+	size([],0).
+	size([H|T],N) :- size(T,N1), N is N1+1.
+	
+	?- size([1,2,3,4],N).
+	
+	Output: 
+	N=4.
+\end{lstlisting}
+
 
 
 \subsection*{Transitive relation}
+\begin{lstlisting}
+sis(joyce,niu).
+sis(keke,joyce).
+sis(joyce,ker).
+sis(X,Y) :- sis(X,Z), sis(Z,Y).
+?-sis(X,Y).
+\end{lstlisting}
 
+\begin{lstlisting}
+	Output:
+	X=joyce.
+	Y=niu.
+	;
+	
+	X=keke.
+	Y=joyce.
+	;
+	
+	X=joyce.
+	Y=ker.
+	;
+	
+	X=keke.
+	Y=niu.
+	;
+	
+	X=keke.
+	Y=ker.
+	
+\end{lstlisting}
 
+This transitive example is where our implementation achieves a better result than the official SWI-Prolog: the official Prolog only gets the results from the facts, but it runs out of its stack before getting the other two results via applying the last rule. 
 
 \section*{Possible future work}
 \begin{itemize}
@@ -107,7 +218,7 @@ In order to pass some certain tests, several built-in functions (such as `write'
 
 
 \section*{Bibliography}
-
+\input{bibli}
 \section*{Appendix}
 
 \lstinputlisting[caption={Data Structures}, label={Types in Ocaml representing program constructs of Prolog}, firstline=2, lastline=27]{../projCommon.ml}

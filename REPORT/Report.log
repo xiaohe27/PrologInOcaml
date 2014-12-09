@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.10.31)  8 DEC 2014 16:43
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.9.9)  8 DEC 2014 21:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -132,7 +132,7 @@ Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
 \Gin@req@height=\dimen112
 \Gin@req@width=\dimen113
 )
-(/usr/share/texlive/texmf-dist/tex/latex/listings/listings.sty
+(/home/xiaohe/texmf/tex/latex/listings/listings.sty
 \lst@mode=\count101
 \lst@gtempboxa=\box28
 \lst@token=\toks22
@@ -146,22 +146,22 @@ Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
 \lst@lineno=\count106
 \lst@maxwidth=\dimen117
 
-(/usr/share/texlive/texmf-dist/tex/latex/listings/lstmisc.sty
-File: lstmisc.sty 2013/08/26 1.5b (Carsten Heinz)
+(/home/xiaohe/texmf/tex/latex/listings/lstmisc.sty
+File: lstmisc.sty 2014/03/04 1.5c (Carsten Heinz)
 \c@lstnumber=\count107
 \lst@skipnumbers=\count108
 \lst@framebox=\box29
 )
-(/usr/share/texlive/texmf-dist/tex/latex/listings/listings.cfg
-File: listings.cfg 2013/08/26 1.5b listings configuration
+(/home/xiaohe/texmf/tex/latex/listings/listings.cfg
+File: listings.cfg 2014/03/04 1.5c listings configuration
 ))
-Package: listings 2013/08/26 1.5b (Carsten Heinz)
+Package: listings 2014/03/04 1.5c (Carsten Heinz)
 
 (/home/xiaohe/texmf/tex/latex/algorithms/algorithm.sty
 Package: algorithm 2009/08/24 v0.1 Document Style `algorithm' - floating enviro
 nment
 
-(/usr/share/texlive/texmf-dist/tex/latex/float/float.sty
+(/home/xiaohe/texmf/tex/latex/float/float.sty
 Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \c@float@type=\count109
 \float@exts=\toks23
@@ -300,46 +300,59 @@ Overfull \hbox (18.53592pt too wide) in paragraph at lines 35--38
  []
 
 [1]
-Underfull \hbox (badness 10000) in paragraph at lines 60--61
+Underfull \hbox (badness 10000) in paragraph at lines 95--98
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 62--63
+Underfull \hbox (badness 10000) in paragraph at lines 99--100
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 64--65
+Underfull \hbox (badness 10000) in paragraph at lines 101--102
+
+ []
+
+[2] [3]
+Underfull \hbox (badness 10000) in paragraph at lines 106--108
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 71--73
-
- []
-
-
-Overfull \hbox (30.5939pt too wide) in paragraph at lines 74--75
+Overfull \hbox (30.5939pt too wide) in paragraph at lines 109--110
 []\OT1/cmr/m/n/10.95 Currently, in the ap-pli-ca-tion which uses back-track-ing
  al-go-rithm (\OT1/cmr/bx/n/10.95 play[]all.exe\OT1/cmr/m/n/10.95 ),
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 74--75
+Underfull \hbox (badness 10000) in paragraph at lines 109--110
 
  []
 
-[2]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 102.
 
- (/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
+Underfull \hbox (badness 10000) in paragraph at lines 117--118
+
+ []
+
+[4]
+LaTeX Font Info:    Try loading font information for OML+cmr on input line 126.
+
+ (/usr/share/texlive/texmf-dist/tex/latex/base/omlcmr.fd
+File: omlcmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OML/cmr/m/n' in size <10.95> not available
+(Font)              Font shape `OML/cmm/m/it' tried instead on input line 126.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 127.
+
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 102.
- (../projCommon.ml
-[3]
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 127.
+ [5] [6] (./bibli.tex)
+(../projCommon.ml
 Overfull \hbox (113.04492pt too wide) in paragraph at lines 15--16
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
@@ -354,20 +367,20 @@ Overfull \hbox (67.05444pt too wide) in paragraph at lines 20--22
 [][][][][][][][][][][][][][] 
  []
 
-)
-Overfull \hbox (53.9143pt too wide) in paragraph at lines 26--112
+[7])
+Overfull \hbox (53.9143pt too wide) in paragraph at lines 26--224
 [][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
-[4] (./Report.aux) ) 
+[8] (./Report.aux) ) 
 Here is how much of TeX's memory you used:
- 4673 strings out of 495028
- 62135 string characters out of 6181496
- 130166 words of memory out of 5000000
- 7805 multiletter control sequences out of 15000+600000
+ 4719 strings out of 495028
+ 62714 string characters out of 6181498
+ 133183 words of memory out of 5000000
+ 7845 multiletter control sequences out of 15000+600000
  11653 words of font info for 44 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 38i,6n,32p,1205b,1518s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 38i,6n,32p,1205b,1520s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
 cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmb
 x12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.p
@@ -376,10 +389,10 @@ sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texli
 ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on Report.pdf (6 pages, 106816 bytes).
+Output written on Report.pdf (10 pages, 120767 bytes).
 PDF statistics:
- 55 PDF objects out of 1000 (max. 8388607)
- 38 compressed objects within 1 object stream
+ 69 PDF objects out of 1000 (max. 8388607)
+ 48 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
