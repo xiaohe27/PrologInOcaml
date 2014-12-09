@@ -7,7 +7,53 @@
 \usepackage{url}
 \usepackage{listings}
 \usepackage{algorithm}
+\usepackage{caption}
 \usepackage{algpseudocode}
+\usepackage{color}
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\lstset{ %
+	backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+	basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+	breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+	breaklines=true,                 % sets automatic line breaking
+	%  captionpos=b,                    % sets the caption-position to bottom
+	commentstyle=\color{green},    % comment style
+	morecomment=[s][\color{green}]{/*}{*/},
+	deletekeywords={...},            % if you want to delete keywords from the given language
+	escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+	extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+	frame=single,                    % adds a frame around the code
+	keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+	keywordstyle=\color{blue},       % keyword style
+	language=Caml,                 % the language of the code
+	morekeywords={*,...},            % if you want to add more keywords to the set
+	numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+	numbersep=5pt,                   % how far the line-numbers are from the code
+	numberstyle=\footnotesize, % the style that is used for the line-numbers
+	rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+	showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+	showstringspaces=false,          % underline spaces within strings only
+	showtabs=false,                  % show tabs within strings adding particular underscores
+	stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered
+	stringstyle=\color{red},     % string literal style
+	tabsize=2,                       % sets default tabsize to 2 spaces
+	framexbottommargin=4pt,
+	belowcaptionskip=-2em,
+}
+
+\DeclareCaptionFont{white}{ \color{white} }
+\DeclareCaptionFormat{listing}{
+	\begin{flushleft}
+		\colorbox{cyan}{
+			\parbox{\textwidth}{\hspace{0pt}#1#2#3} 
+		}
+	\end{flushleft}
+}
+\captionsetup[lstlisting]{ format=listing, labelfont=white, textfont=white,justification=justified, singlelinecheck=false, margin=-10pt, font={bf,footnotesize} }
 
 \author{He Xiao, Shijiao Yuwen}
 \title{Prolog in Ocaml}
@@ -241,6 +287,39 @@ Due to the time constraints, the application is not tested thoroughly; but to th
 \bibliography{dblp}
 
 \section*{Appendix}
-\lstinputlisting[caption={Data Structures}, label={Types in Ocaml representing program constructs of Prolog}, firstline=2, lastline=27]{../projCommon.ml}
+
+For the complete source code and test cases, please visit our Github's page at \url{https://github.com/xiaohe27/PrologInOcaml}
+
+\newpage
+
+\lstinputlisting[caption={ProjCommon.ml: Commonly used functions in the project}, label={ProjCommon.ml}]{../projCommon.ml}
+
+\lstinputlisting[caption={Lexer.mll: Lexer for the input source code}, label={Lexer.mll}]{../lexer.mll}
+
+\lstinputlisting[caption={Parser.mly: Parser for the input language}, label={Parser.mly}]{../parser.mly}
+
+\lstinputlisting[caption={Unify.ml: Code for unification}, label={Unify.ml}]{../unify.ml}
+
+\lstinputlisting[caption={Evaluator.ml: Code for evaluating terms}, label={Evaluator.ml}]{../evaluator.ml}
+
+\lstinputlisting[caption={Interpreter.ml: Code for interpreting queries}, label={Interpreter.ml}]{../interpreter.ml}
+
+\lstinputlisting[caption={Backtrack.ml: Code for finding all results for a query}, label={Backtrack.ml}]{../backtrack.ml}
+
+\lstinputlisting[caption={Glue.ml: Code that combines different components of the project and provides interface for the users of the system}, label={Glue.ml}]{../glue.ml}
+
+\lstinputlisting[caption={Play.ml: Code for interactive interpreter}, label={Play.ml}]{../play.ml}
+
+\lstinputlisting[caption={Debugger.ml: Code for interactive interpreter with debugging information}, label={Debugger.ml}]{../debugger.ml}
+
+\lstinputlisting[caption={ReadFile.ml: Code for the interpreter which directly reads input from file system}, label={ReadFile.ml}]{../readFile.ml}
+
+\lstinputlisting[caption={$Play_all.ml$: Code for interactive interpreter which shows every result it finds}, label={Play_all.ml}]{../play_all.ml}
+
+\lstinputlisting[caption={make.sh: Code for building the project}, label={make.sh}]{../make.sh}
+
+\lstinputlisting[caption={clean.sh: Code for cleaning the project's binaries}, label={clean.sh}]{../clean.sh}
+
+\lstinputlisting[caption={genExecutable.sh: Code for building executables}, label={genExecutable.sh}]{../genExecutable.sh}
 
 \end{document}

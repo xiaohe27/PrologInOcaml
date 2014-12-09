@@ -71,17 +71,17 @@ rule token = parse
 |"["                            { LBRACKET } (* left bracket for lists *)
 |"]"                            { RBRACKET } (* right bracket for lists *)
 |"|"                            { PIPE } (* head-tail delimiter for lists *)
-| ".."							{ DOUBLEDOT }
-| "."							{ DOT }
-|"%"[^'\n']* 					{ token lexbuf }
-| open_comment					{ comment 1 lexbuf }
-| close_comment 				{ raise (Failure "unmatched closed comment") }
-| '"' 							{stringToken "" lexbuf}
-| "'" 							{singleStringToken "'" lexbuf}
-| name as id					{ NAME (id) }
-| int      						{ INT (int_of_string (Lexing.lexeme lexbuf)) }
-| float  					 	{ FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
-| variable						{ VARIABLE (Lexing.lexeme lexbuf) }
+| ".."				{ DOUBLEDOT }
+| "."				{ DOT }
+|"%"[^'\n']* 			{ token lexbuf }
+| open_comment			{ comment 1 lexbuf }
+| close_comment 		{ raise (Failure "unmatched closed comment") }
+| '"' 				{stringToken "" lexbuf}
+| "'" 				{singleStringToken "'" lexbuf}
+| name as id			{ NAME (id) }
+| int      			{ INT (int_of_string (Lexing.lexeme lexbuf)) }
+| float  			{ FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
+| variable			{ VARIABLE (Lexing.lexeme lexbuf) }
 
 and comment depth = parse
 open_comment		{ comment (depth+1) lexbuf }
