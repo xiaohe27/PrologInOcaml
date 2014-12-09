@@ -23,8 +23,8 @@ try (
 	
 	ProgFromQuery(query) -> (Prog(rules,query))  ) in
 
-	let result= Glue.refineResult (Glue.getQueryFromPgm newPgm) (Glue.execProgram newPgm) in 
-	let _=	printResult result in
+	let resultList= List.map (Glue.refineResult (Glue.getQueryFromPgm newPgm)) (Glue.findAllResults newPgm) in 
+	let _=	Glue.printResultOneByOne resultList in
 	match newPgm with 
 	Prog(newRules, _) -> (loop newRules) |
 	_ -> (loop rules)
