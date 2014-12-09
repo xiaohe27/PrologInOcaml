@@ -11,3 +11,9 @@ lexer.ml
 parser.ml
 
 Test/SystemTest/path.txt
+*.aux
+*.bbl
+*.blg
+*.dvi
+Report.log
+*synctex.gz
