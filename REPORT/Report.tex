@@ -15,7 +15,7 @@
 	
 \begin{abstract}
 	This report presents the design and implementation of the application `Prolog-Ocaml'.
-	Basically, this project used Prolog as a template, and designed a variant of Prolog in Ocaml;
+	Basically, this project used Prolog \cite{PrologWiki} as a template, and designed a variant of Prolog in Ocaml;
 	it covers the most basic phases of implementing a new programming paradigm: lexing, parsing, interpreting.
 	Given the source code in predefined grammar, the delivered product can parse it to an internal AST and execute
 	it. After testing it with some well-known Prolog programs and comparing the results with the official Prolog implementation,
@@ -216,9 +216,8 @@ This transitive example is where our implementation achieves a better result tha
 \end{itemize}
 
 
-\section*{Bibliography}
-\input{bibli}
-\section*{Appendix}
+\bibliographystyle{plain}
+\bibliography{dblp}
 
 \lstinputlisting[caption={Data Structures}, label={Types in Ocaml representing program constructs of Prolog}, firstline=2, lastline=27]{../projCommon.ml}
 
