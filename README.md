@@ -31,11 +31,11 @@ from the specified path.
 
 
 ##play_all.exe:
-Play_all.exe uses backtracking algorithm to gather all the results.
+Play_all.exe uses backtracking algorithm to gather all the results, and it is the 
+application which we mainly tested. It is an interactive interpreter, and users 
+can interact with it in the similar way as they do for running play.exe. 
 If multiple results available, users can input a ';' followed by a '\n' (enter key),
 then the next result will be provided if there exists some.
-
-
 
 
 
