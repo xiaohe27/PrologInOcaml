@@ -11,24 +11,35 @@ Participants: He Xiao and Shijiao Yuwen
 #Install
 sh make.sh
 
-#Run 
-##Test parser
-Option 1: using ocaml's interactive terminal:
-ocaml (enter ocaml command window)
-#load "projCommon.cmo";;
-#load "lexer.cmo";;
-#load "parser.cmo";;
-#load "unify.cmo";;
-#load "evaluator.cmo";;
-#load "interpreter.cmo";;
 
-#use "glue.ml";;
+If the install finished successfully, then there will be four executables
+generated: play.exe, debug.exe, readFile.exe and play_all.exe.
 
-Option 2 (Generate executable): 
-ocamlc -o [YourOcamlProgram.exe] projCommon.cmo lexer.cmo parser.cmo
-unify.cmo evaluator.cmo interpreter.cmo glue.cmo <YourOcamlProgram.ml>
+##play.exe: 
+This is an interactive environment where users can input Prolog
+program by hand; and when a complete program (clauses with a query) is detected,
+the first result will be printed to the console.
+
+##debug.exe:
+Similar to play.exe, but you can get more debugging information in the output
+in addition to the result.
+
+##readFile.exe:
+Same internal algorithm used as the above two programs, but it can read the input
+from the specified path.
+```./readFile.exe <path-to-your-prolog-source-code>```
+
+
+##play_all.exe:
+Play_all.exe uses backtracking algorithm to gather all the results.
+If multiple results available, users can input a ';' followed by a '\n' (enter key),
+then the next result will be provided if there exists some.
+
+
+
+
 
 #Test
-GOTO Test/ReadMe.txt for more info.
+The main test cases we used can be found in Test/prolog folder.
 
 
