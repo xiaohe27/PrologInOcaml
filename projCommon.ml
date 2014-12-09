@@ -15,8 +15,9 @@ type term = Var of string | ConstTerm of const |
 and predicate = Identifier of string | Predicate of string * (term list)
 		| VarAsPred of string ;;
 
-		(* predicates can either be separated by comma or by semi-colon *)
-type clause = Fact of predicate | Rule of predicate * (predicate list * string list);;
+(* predicates can either be separated by comma or by semi-colon *)
+type clause = Fact of predicate | Rule of predicate * 
+				 (predicate list * string list);;
 
 type query = Query of (predicate list * string list);;
 
@@ -68,8 +69,6 @@ type result = bool * subst ;;
 (*indexed rules*)
 type indexedRules = (int * clause) list;;
 
-(*backtrack result*)
-type enhancedResult = result * (int list);;
 
 
 (*print term*)
