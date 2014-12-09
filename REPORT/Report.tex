@@ -97,8 +97,6 @@ The other fundamental function is created for evaluating a predicate to either t
 \end{algorithm}
 
 
-N.B. In the implementation, there might be some part realized in the situation where a rule's head can unify with the predicate but the rule does not fire due to the body part does not return true.
-
 \bigskip
 Big picture:
 Given a Prolog program consisting of a bunch of clauses and a query, our program is expected to
@@ -216,6 +214,20 @@ sis(X,Y) :- sis(X,Z), sis(Z,Y).
 \end{lstlisting}
 
 This transitive example is where our implementation achieves a better result than the official SWI-Prolog: the official Prolog only gets the results from the facts, but it runs out of its stack before getting the other two results via applying the last rule. 
+
+\bigskip
+
+\section*{Limitations}
+\begin{itemize}
+	\item In the implementation of the `play.exe' which retrieves a single result, a true result may not be found in the situation where a rule's head can unify with the predicate but the rule does not fire due to the body part does not return true. \\
+	
+	\item If the input argument is too large, then `play\_all.exe' may not compute the results correctly. Some incorrect result has been found when compute the factorial with big number.
+	
+	\item Some feature like $Cuts$ are not supported in the current implementation of our tool.
+\end{itemize}
+
+Due to the time constraints, the application is not tested thoroughly; but to the best of our knowledge, it runs as expected on the provided classic examples.
+
 
 \section*{Possible future work}
 \begin{itemize}
