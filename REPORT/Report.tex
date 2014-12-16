@@ -259,7 +259,7 @@ sis(X,Y) :- sis(X,Z), sis(Z,Y).
 	
 \end{lstlisting}
 
-This transitive example is where our implementation achieves a better result than the official SWI-Prolog: the official Prolog only gets the results from the facts, but it runs out of its stack before getting the other two results via applying the last rule. 
+This transitive example is where our implementation achieves a better result than the official SWI-Prolog in Unix (Multi-threaded, 64 bits, Version 6.6.4): the official Prolog only gets the results from the facts, but it runs out of its stack before getting the other two results via applying the last rule. 
 
 \bigskip
 
@@ -282,6 +282,8 @@ Due to the time constraints, the application is not tested thoroughly; but to th
 	\item Currently, due to the limitation of algorithms used, some results may not be detected even if they are true. An idea to solve this problem is by adding the results obtained from last query as facts to the knowledge base, so in the future queries, those previously missing results will not be missed again. This design is also reflecting the process of  children's continuously learning via remembering facts. Another possible solution is: before returning the computed results to the user, the application can analyze the results and get some new facts and place them into the knowledge base. After that, the application re-run the query to check whether the new results obtained is the same as the previous one (if multiple results available, the order maybe different). This process is repeated until a fixed point is reached, when the final complete result will be returned to the user. 
 \end{itemize}
 
+\section*{Acknowledgment}
+Several functions about generating fresh names are borrowed from the `mp5common.ml' in Elsa's CS421 MP resource \cite{mp}.
 
 \bibliographystyle{plain}
 \bibliography{dblp}
